@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   if (!question) return NextResponse.json({ error: 'Pregunta requerida' }, { status: 400 })
 
   const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return NextResponse.json({ error: 'API key no configurada' }, { status: 500 })
+  if (!apiKey) return NextResponse.json({ error: 'API key no encontrada', hasKey: false }, { status: 500 })
 
   try {
     const res = await fetch(
@@ -38,7 +38,17 @@ Pregunta del usuario: ${question}`,
     )
 
     const data = await res.json()
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? 'No se pudo obtener respuesta.'
+
+    // Devolver todo para debug
+    if (!res.ok) {
+      return NextResponse.json({ error: 'Gemini error', status: res.status, data }, { status: 500 })
+    }
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+    if (!text) {
+      return NextResponse.json({ error: 'Respuesta vacía', raw: data }, { status: 500 })
+    }
+
     return NextResponse.json({ answer: text })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
