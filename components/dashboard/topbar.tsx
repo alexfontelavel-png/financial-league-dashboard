@@ -1,5 +1,5 @@
 'use client'
-import { Search, Bell, ChevronDown, X, Plus, Minus } from 'lucide-react'
+import { Search, Bell, ChevronDown, X, Plus, Minus, Check } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { authClient } from '@/lib/auth-client'
 
@@ -26,6 +26,8 @@ export function Topbar() {
   const [shares, setShares]             = useState(1)
   const [mode, setMode]                 = useState<'shares' | 'amount'>('shares')
   const [amount, setAmount]             = useState('')
+  const [tradeLoading, setTradeLoading] = useState(false)
+  const [toast, setToast]               = useState<{ ok: boolean; msg: string } | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const { data: session } = authClient.useSession()
@@ -52,6 +54,7 @@ export function Topbar() {
     setShowBuy(false)
     setShares(1)
     setAmount('')
+    setToast(null)
     try {
       const res = await fetch(`/api/quote?ticker=${r.ticker}`)
       if (res.ok) {
@@ -69,12 +72,53 @@ export function Topbar() {
     setShowBuy(false)
     setShares(1)
     setAmount('')
+    setToast(null)
+    setQuery('')
+  }
+
+  async function executeTrade() {
+    if (!selected) return
+    setTradeLoading(true)
+    setToast(null)
+
+    const body = mode === 'shares'
+      ? { ticker: selected.ticker, type: 'buy', shares }
+      : { ticker: selected.ticker, type: 'buy', shares: parseFloat(amount) / selected.price }
+
+    try {
+      const res = await fetch('/api/trade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        setToast({
+          ok: true,
+          msg: `✓ Compra ejecutada: ${Number(data.shares).toFixed(4)} acc. de ${selected.ticker} a $${Number(data.price).toFixed(2)} · Cash restante: €${Number(data.cashAfter).toFixed(2)}`,
+        })
+        // Refrescar el PortfolioCard automáticamente
+        window.dispatchEvent(new Event('portfolio-updated'))
+        // Cerrar modal tras 2 segundos
+        setTimeout(() => closeAll(), 2500)
+      } else {
+        setToast({ ok: false, msg: data.error ?? 'Error desconocido' })
+      }
+    } catch {
+      setToast({ ok: false, msg: 'Error de red. Inténtalo de nuevo.' })
+    }
+    setTradeLoading(false)
   }
 
   const totalByShares  = selected ? shares * selected.price : 0
   const sharesByAmount = selected && parseFloat(amount) > 0
     ? parseFloat(amount) / selected.price
     : 0
+
+  const canBuy = mode === 'shares'
+    ? shares > 0 && selected && selected.price > 0
+    : parseFloat(amount) > 0 && selected && selected.price > 0
 
   return (
     <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -102,8 +146,6 @@ export function Topbar() {
               <X className="size-3.5" />
             </button>
           )}
-
-          {/* Dropdown resultados */}
           {(results.length > 0 || loading) && (
             <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
               {loading && <p className="px-4 py-3 text-xs text-muted-foreground">Buscando...</p>}
@@ -250,18 +292,23 @@ export function Topbar() {
                       </div>
                     )}
 
+                    {/* Toast resultado */}
+                    {toast && (
+                      <div className={`rounded-xl px-3 py-2.5 text-xs leading-snug ${toast.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                        {toast.msg}
+                      </div>
+                    )}
+
                     <div className="flex gap-2">
                       <button onClick={() => setShowBuy(false)}
                         className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent transition-colors">
                         Cancelar
                       </button>
                       <button
-                        onClick={() => {
-                          alert(`Orden de compra: ${mode === 'shares' ? `${shares} acciones de ${selected.ticker}` : `€${amount} de ${selected.ticker}`}\nTotal: $${mode === 'shares' ? totalByShares.toFixed(2) : amount}`)
-                          closeAll()
-                        }}
-                        className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
-                        Confirmar compra
+                        onClick={executeTrade}
+                        disabled={!canBuy || tradeLoading}
+                        className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-1.5">
+                        {tradeLoading ? 'Ejecutando...' : toast?.ok ? <><Check className="size-3.5" />Comprado</> : 'Confirmar compra'}
                       </button>
                     </div>
                   </div>
