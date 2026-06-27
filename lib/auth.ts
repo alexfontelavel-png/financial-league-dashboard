@@ -1,8 +1,21 @@
 import { betterAuth } from 'better-auth'
-import { pool } from '@/lib/db'
+import { Pool } from 'pg'
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+})
 
 export const auth = betterAuth({
-  database: pool,
+  database: {
+    db: pool,
+    type: 'postgres',
+    schema: {
+      user: 'auth_app.user',
+      session: 'auth_app.session',
+      account: 'auth_app.account',
+      verification: 'auth_app.verification',
+    },
+  },
   baseURL:
     process.env.BETTER_AUTH_URL ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -22,19 +35,7 @@ export const auth = betterAuth({
       : []),
   ],
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
   },
-  ...(process.env.NODE_ENV === 'development'
-    ? {
-        advanced: {
-          // In dev (v0 preview iframe), force cross-site cookies so the
-          // session cookie is stored by the browser.
-          defaultCookieAttributes: {
-            sameSite: 'none' as const,
-            secure: true,
-          },
-        },
-      }
-    : {}),
 })
