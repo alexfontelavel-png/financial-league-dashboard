@@ -4,7 +4,36 @@ import { formatEuro } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { TickerBadge } from './ticker-badge'
 
-export function TopAssets() {
+async function getLivePrices(): Promise<Record<string, { price: number; change: number }>> {
+  try {
+    const baseUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000'
+
+    const res = await fetch(`${baseUrl}/api/prices`, {
+      next: { revalidate: 3600 },
+    })
+    if (!res.ok) return {}
+    return res.json()
+  } catch {
+    return {}
+  }
+}
+
+export async function TopAssets() {
+  const prices = await getLivePrices()
+
+  const assets = topAssets.map(asset => ({
+    ...asset,
+    price: prices[asset.ticker]?.price ?? asset.price,
+    change: prices[asset.ticker]?.change ?? asset.change,
+    holding: prices[asset.ticker]?.price
+      ? prices[asset.ticker].price * asset.shares
+      : asset.holding,
+  }))
+
   return (
     <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
       <div className="flex items-center justify-between">
@@ -18,9 +47,8 @@ export function TopAssets() {
           View all
         </button>
       </div>
-
       <ul className="mt-4 flex flex-col">
-        {topAssets.map((asset) => {
+        {assets.map((asset) => {
           const up = asset.change >= 0
           return (
             <li
@@ -33,7 +61,7 @@ export function TopAssets() {
                   {asset.ticker}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {asset.shares} shares
+                  {asset.shares} shares · ${asset.price.toFixed(2)}
                 </p>
               </div>
               <div className="text-right">
