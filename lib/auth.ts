@@ -1,21 +1,10 @@
 import { betterAuth } from 'better-auth'
 import { Pool } from 'pg'
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-})
-
 export const auth = betterAuth({
-  database: {
-    db: pool,
-    type: 'postgres',
-    schema: {
-      user: 'auth_app.user',
-      session: 'auth_app.session',
-      account: 'auth_app.account',
-      verification: 'auth_app.verification',
-    },
-  },
+  database: new Pool({
+    connectionString: process.env.DATABASE_URL,
+  }),
   baseURL:
     process.env.BETTER_AUTH_URL ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
