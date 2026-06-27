@@ -258,15 +258,15 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
   onBack: () => void
   onClose: () => void
 }) {
-  const [ticker, setTicker]             = useState('')
+  const [ticker, setTicker]               = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-  const [searching, setSearching]       = useState(false)
-  const [quotePrice, setQuotePrice]     = useState<number | null>(null)
-  const [quoteLoading, setQuoteLoading] = useState(false)
-  const [mode, setMode]                 = useState<'shares' | 'amount'>('shares')
-  const [shares, setShares]             = useState(1)
-  const [amount, setAmount]             = useState('')
-  const [confirmed, setConfirmed]       = useState(false)
+  const [searching, setSearching]         = useState(false)
+  const [quotePrice, setQuotePrice]       = useState<number | null>(null)
+  const [quoteLoading, setQuoteLoading]   = useState(false)
+  const [mode, setMode]                   = useState<'shares' | 'amount'>('shares')
+  const [shares, setShares]               = useState(1)
+  const [amount, setAmount]               = useState('')
+  const [confirmed, setConfirmed]         = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const price = quotePrice ?? 0
@@ -327,16 +327,12 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
           <p className="text-xs text-muted-foreground">Coste: {leverage === 2 ? '4€' : '6,50€'} · Selecciona acción y cantidad</p>
         </div>
       </div>
-
       <div className="relative">
         <div className="flex items-center gap-2 bg-background rounded-xl border border-border px-3 py-2.5 focus-within:border-red-400 transition-colors">
           <Search className="size-4 text-muted-foreground shrink-0" />
-          <input
-            value={ticker}
-            onChange={e => { setTicker(e.target.value.toUpperCase()); setQuotePrice(null) }}
+          <input value={ticker} onChange={e => { setTicker(e.target.value.toUpperCase()); setQuotePrice(null) }}
             placeholder="Buscar acción... AAPL, TSLA, NVDA"
-            className="bg-transparent text-sm font-mono font-bold text-foreground placeholder:text-muted-foreground outline-none flex-1"
-          />
+            className="bg-transparent text-sm font-mono font-bold text-foreground placeholder:text-muted-foreground outline-none flex-1" />
           {quoteLoading && <span className="text-xs text-muted-foreground animate-pulse">Cargando...</span>}
           {quotePrice && !quoteLoading && <span className="text-sm font-bold text-foreground shrink-0">${quotePrice.toFixed(2)}</span>}
         </div>
@@ -346,9 +342,7 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
             {searchResults.slice(0, 5).map(r => (
               <button key={r.ticker} onMouseDown={() => selectTicker(r)}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-accent transition-colors border-b border-border last:border-0">
-                <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-100 text-[10px] font-bold text-red-600">
-                  {r.ticker.slice(0, 2)}
-                </div>
+                <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-100 text-[10px] font-bold text-red-600">{r.ticker.slice(0, 2)}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-foreground">{r.ticker}</p>
                   <p className="text-[11px] text-muted-foreground truncate">{r.name}</p>
@@ -358,7 +352,6 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
           </div>
         )}
       </div>
-
       <div className="flex rounded-xl border border-border overflow-hidden">
         <button onClick={() => setMode('shares')}
           className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'shares' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-accent'}`}>
@@ -369,68 +362,41 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
           Por importe
         </button>
       </div>
-
       {mode === 'shares' && (
         <div>
           <p className="text-xs text-muted-foreground mb-2">Número de acciones</p>
           <div className="flex items-center gap-3">
-            <button onClick={() => setShares(s => Math.max(1, s - 1))}
-              className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors">
-              <Minus className="size-4" />
-            </button>
-            <input type="number" value={shares} min={1}
-              onChange={e => setShares(Math.max(1, parseInt(e.target.value) || 1))}
+            <button onClick={() => setShares(s => Math.max(1, s - 1))} className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors"><Minus className="size-4" /></button>
+            <input type="number" value={shares} min={1} onChange={e => setShares(Math.max(1, parseInt(e.target.value) || 1))}
               className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-center text-sm font-bold text-foreground outline-none" />
-            <button onClick={() => setShares(s => s + 1)}
-              className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors">
-              <Plus className="size-4" />
-            </button>
+            <button onClick={() => setShares(s => s + 1)} className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors"><Plus className="size-4" /></button>
           </div>
           {price > 0 && (
             <div className="mt-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 flex flex-col gap-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Tu inversión ({shares} acc.)</span>
-                <span className="font-semibold text-foreground">${totalByShares.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-red-600 font-semibold">Exposición real {leverage}x</span>
-                <span className="font-black text-red-600">${exposureShares.toFixed(2)}</span>
-              </div>
+              <div className="flex justify-between text-xs"><span className="text-muted-foreground">Tu inversión ({shares} acc.)</span><span className="font-semibold text-foreground">${totalByShares.toFixed(2)}</span></div>
+              <div className="flex justify-between text-xs"><span className="text-red-600 font-semibold">Exposición real {leverage}x</span><span className="font-black text-red-600">${exposureShares.toFixed(2)}</span></div>
             </div>
           )}
         </div>
       )}
-
       {mode === 'amount' && (
         <div>
           <p className="text-xs text-muted-foreground mb-2">Importe en euros</p>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">€</span>
-            <input type="number" value={amount} min={0} placeholder="0.00"
-              onChange={e => setAmount(e.target.value)}
+            <input type="number" value={amount} min={0} placeholder="0.00" onChange={e => setAmount(e.target.value)}
               className="w-full h-10 rounded-xl border border-border bg-background pl-7 pr-3 text-sm font-bold text-foreground outline-none" />
           </div>
           {parseFloat(amount) > 0 && price > 0 && (
             <div className="mt-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 flex flex-col gap-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Acciones aproximadas</span>
-                <span className="font-semibold text-foreground">{sharesByAmount.toFixed(4)} acc.</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Precio por acción</span>
-                <span className="font-semibold text-foreground">${price.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-xs border-t border-red-200 pt-1 mt-1">
-                <span className="text-red-600 font-semibold">Exposición real {leverage}x</span>
-                <span className="font-black text-red-600">${exposureAmount.toFixed(2)}</span>
-              </div>
+              <div className="flex justify-between text-xs"><span className="text-muted-foreground">Acciones aproximadas</span><span className="font-semibold text-foreground">{sharesByAmount.toFixed(4)} acc.</span></div>
+              <div className="flex justify-between text-xs"><span className="text-muted-foreground">Precio por acción</span><span className="font-semibold text-foreground">${price.toFixed(2)}</span></div>
+              <div className="flex justify-between text-xs border-t border-red-200 pt-1 mt-1"><span className="text-red-600 font-semibold">Exposición real {leverage}x</span><span className="font-black text-red-600">${exposureAmount.toFixed(2)}</span></div>
             </div>
           )}
         </div>
       )}
-
-      <button
-        onClick={() => { if (ticker && (mode === 'shares' ? price > 0 : parseFloat(amount) > 0)) setConfirmed(true) }}
+      <button onClick={() => { if (ticker && (mode === 'shares' ? price > 0 : parseFloat(amount) > 0)) setConfirmed(true) }}
         disabled={!ticker || !price || (mode === 'amount' && parseFloat(amount) <= 0)}
         className="w-full rounded-xl bg-red-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-40">
         Confirmar Degen Trade {leverage}x · {leverage === 2 ? '4€' : '6,50€'}
@@ -441,13 +407,11 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
 
 function DegenTradePanel({ onClose }: { onClose: () => void }) {
   const [selectedLeverage, setSelectedLeverage] = useState<2 | 3 | null>(null)
-
   const features = [
     '¿Has escuchado sobre los degen trades?',
     'Si tienes convicción con un movimiento, ves a por todas',
     'Apalanca un trade y multiplica tus resultados',
   ]
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
@@ -462,7 +426,6 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
               </div>
               <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
             </div>
-
             <ul className="flex flex-col gap-3 mb-6">
               {features.map((f, i) => (
                 <li key={i} className="flex items-start gap-3 rounded-xl bg-background border border-border px-4 py-3">
@@ -471,36 +434,25 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
                 </li>
               ))}
             </ul>
-
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div><p className="text-base font-black text-red-600">Apalanca 2x</p><p className="text-xs text-red-400">Duplica tu exposición</p></div>
                   <div className="text-right"><p className="text-xl font-black text-red-600">4€</p><p className="text-xs text-red-400">/trade</p></div>
                 </div>
-                <button onClick={() => setSelectedLeverage(2)}
-                  className="w-full rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
-                  Añadir · 4€
-                </button>
+                <button onClick={() => setSelectedLeverage(2)} className="w-full rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">Añadir · 4€</button>
               </div>
               <div className="rounded-2xl border-2 border-red-400 bg-red-100 p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div><p className="text-base font-black text-red-700">Apalanca 3x</p><p className="text-xs text-red-500">Triplica tu exposición</p></div>
                   <div className="text-right"><p className="text-xl font-black text-red-700">6,50€</p><p className="text-xs text-red-500">/trade</p></div>
                 </div>
-                <button onClick={() => setSelectedLeverage(3)}
-                  className="w-full rounded-xl bg-red-700 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
-                  Añadir · 6,50€
-                </button>
+                <button onClick={() => setSelectedLeverage(3)} className="w-full rounded-xl bg-red-700 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">Añadir · 6,50€</button>
               </div>
             </div>
-
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
               <p className="text-sm font-bold text-red-700 mb-3">⚠️ ¿Qué implica el Apalancamiento 2x?</p>
-              <p className="text-xs text-red-600 mb-3 leading-relaxed">
-                Al activar este boost, tanto tus ganancias como tus pérdidas se multiplicarán por dos.
-                Ejemplo si inviertes 100€ en Amazon (Posición real en mercado: 200€):
-              </p>
+              <p className="text-xs text-red-600 mb-3 leading-relaxed">Al activar este boost, tanto tus ganancias como tus pérdidas se multiplicarán por dos. Ejemplo si inviertes 100€ en Amazon (Posición real en mercado: 200€):</p>
               <ul className="flex flex-col gap-2">
                 <li className="flex items-start gap-2 text-xs text-red-600"><span>🚀</span><span><strong>Si Amazon sube un 10%:</strong> Tú ganas un 20% (tu saldo sube a 120€).</span></li>
                 <li className="flex items-start gap-2 text-xs text-red-600"><span>📉</span><span><strong>Si Amazon baja un 10%:</strong> Tú pierdes un 20% (tu saldo baja a 80€).</span></li>
@@ -514,12 +466,178 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
   )
 }
 
+interface PortfolioPosition {
+  ticker: string
+  company_name: string
+  shares: number
+  avg_buy_price: number
+  current_price: number
+  current_value: number
+  pnl: number
+  pnl_pct: number
+}
+
+interface PortfolioTransaction {
+  id: string
+  ticker: string
+  type: string
+  shares: number
+  price_per_share: number
+  total_amount: number
+  executed_at: string
+}
+
+interface PortfolioData {
+  cash_balance: number
+  total_value: number
+  invested_value: number
+  roi_pct: number
+  positions: PortfolioPosition[]
+  transactions: PortfolioTransaction[]
+}
+
+function PortfolioPanel({ onClose }: { onClose: () => void }) {
+  const [data, setData]       = useState<PortfolioData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/portfolio')
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const fmt   = (n: number) => n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
+  const total = data?.total_value ?? 0
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
+
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-foreground">Mi Portfolio</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Resumen de tu cartera en tiempo real</p>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+        </div>
+
+        {loading && (
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
+          </div>
+        )}
+
+        {!loading && data && (
+          <>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[
+                ['Valor total', fmt(data.total_value), ''],
+                ['Invertido', fmt(data.invested_value), ''],
+                ['Cash', fmt(data.cash_balance), 'text-green-600'],
+              ].map(([l, v, c]) => (
+                <div key={l} className="rounded-xl border border-border bg-background p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">{l}</p>
+                  <p className={`text-base font-bold ${c || 'text-foreground'}`}>{v}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className={`rounded-xl px-4 py-3 mb-5 flex items-center justify-between ${data.roi_pct >= 0 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+              <p className="text-sm font-medium text-foreground">Rentabilidad total</p>
+              <p className={`text-lg font-black ${data.roi_pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {data.roi_pct >= 0 ? '+' : ''}{data.roi_pct.toFixed(2)}%
+              </p>
+            </div>
+
+            <h3 className="text-sm font-semibold text-foreground mb-3">Posiciones abiertas</h3>
+            {data.positions.length === 0 ? (
+              <div className="rounded-xl border border-border bg-background p-8 text-center mb-5">
+                <p className="text-sm text-muted-foreground">Sin posiciones. Compra tu primera acción desde el Trade Panel.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2 mb-5">
+                {data.positions.map(pos => {
+                  const weight = total > 0 ? (pos.current_value / total) * 100 : 0
+                  return (
+                    <div key={pos.ticker} className="rounded-xl border border-border bg-background p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+                            {pos.ticker.slice(0, 2)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-foreground">{pos.ticker}</p>
+                            <p className="text-xs text-muted-foreground">{pos.shares.toFixed(4)} acc. · ${pos.current_price.toFixed(2)}/acc.</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-foreground">{fmt(pos.current_value)}</p>
+                          <p className={`text-xs font-semibold ${pos.pnl_pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {pos.pnl_pct >= 0 ? '+' : ''}{pos.pnl_pct.toFixed(2)}%
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                          <div className="h-1.5 rounded-full bg-primary transition-all" style={{ width: `${weight}%` }} />
+                        </div>
+                        <span className="text-[11px] text-muted-foreground shrink-0">{weight.toFixed(1)}% cartera</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground mt-1.5">
+                        <span>Precio medio: ${pos.avg_buy_price.toFixed(2)}</span>
+                        <span>P&L: {pos.pnl >= 0 ? '+' : ''}{fmt(pos.pnl)}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {data.transactions.length > 0 && (
+              <>
+                <h3 className="text-sm font-semibold text-foreground mb-3">Últimas operaciones</h3>
+                <div className="flex flex-col gap-2">
+                  {data.transactions.slice(0, 5).map(tx => (
+                    <div key={tx.id} className="flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3">
+                      <div className={`flex size-8 items-center justify-center rounded-lg text-xs font-bold text-white ${tx.type === 'buy' ? 'bg-primary' : 'bg-red-500'}`}>
+                        {tx.type === 'buy' ? 'C' : 'V'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-foreground">{tx.ticker}
+                          <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${tx.type === 'buy' ? 'bg-primary/10 text-primary' : 'bg-red-50 text-red-600'}`}>
+                            {tx.type === 'buy' ? 'Compra' : 'Venta'}
+                          </span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{Number(tx.shares).toFixed(4)} acc. · ${Number(tx.price_per_share).toFixed(2)}/acc.</p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-sm font-bold ${tx.type === 'buy' ? 'text-red-500' : 'text-green-600'}`}>
+                          {tx.type === 'buy' ? '-' : '+'}{fmt(Number(tx.total_amount))}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {new Date(tx.executed_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function Sidebar() {
-  const [active, setActive]           = useState('Dashboard')
-  const [showLeagues, setShowLeagues] = useState(false)
-  const [showMarkets, setShowMarkets] = useState(false)
-  const [showCrypto, setShowCrypto]   = useState(false)
-  const [showDegen, setShowDegen]     = useState(false)
+  const [active, setActive]               = useState('Dashboard')
+  const [showLeagues, setShowLeagues]     = useState(false)
+  const [showMarkets, setShowMarkets]     = useState(false)
+  const [showCrypto, setShowCrypto]       = useState(false)
+  const [showDegen, setShowDegen]         = useState(false)
+  const [showPortfolio, setShowPortfolio] = useState(false)
 
   function handleNav(label: string) {
     setActive(label)
@@ -527,6 +645,7 @@ export function Sidebar() {
     if (label === 'Markets')      setShowMarkets(true)
     if (label === 'Crypto Boost') setShowCrypto(true)
     if (label === 'Degen Trade')  setShowDegen(true)
+    if (label === 'Portfolio')    setShowPortfolio(true)
   }
 
   return (
@@ -594,10 +713,11 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {showLeagues && <LeaguesPanel onClose={() => setShowLeagues(false)} />}
-      {showMarkets && <MarketsPanel onClose={() => setShowMarkets(false)} />}
-      {showCrypto  && <CryptoBoostPanel onClose={() => setShowCrypto(false)} />}
-      {showDegen   && <DegenTradePanel onClose={() => setShowDegen(false)} />}
+      {showLeagues   && <LeaguesPanel   onClose={() => setShowLeagues(false)} />}
+      {showMarkets   && <MarketsPanel   onClose={() => setShowMarkets(false)} />}
+      {showCrypto    && <CryptoBoostPanel onClose={() => setShowCrypto(false)} />}
+      {showDegen     && <DegenTradePanel onClose={() => setShowDegen(false)} />}
+      {showPortfolio && <PortfolioPanel  onClose={() => setShowPortfolio(false)} />}
     </>
   )
 }
