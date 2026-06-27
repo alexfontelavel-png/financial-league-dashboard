@@ -30,7 +30,7 @@ export default function RegisterPage() {
             <span className="text-2xl font-black text-primary-foreground">B</span>
           </div>
           <h1 className="text-2xl font-bold text-foreground">Crea tu cuenta</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Únete a Bull League y empieza a competir</p>
+          <p className="mt-1 text-sm text-muted-foreground">Únete a Financial League y empieza a competir</p>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
