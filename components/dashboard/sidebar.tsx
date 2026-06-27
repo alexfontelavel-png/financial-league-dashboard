@@ -13,6 +13,7 @@ import {
   TrendingDown,
   Send,
   Zap,
+  Flame,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
@@ -24,6 +25,7 @@ const nav = [
   { label: 'Leagues', icon: Trophy },
   { label: 'Players', icon: Users },
   { label: 'Crypto Boost', icon: Zap },
+  { label: 'Degen Trade', icon: Flame },
 ]
 
 const bottomNav = [
@@ -48,20 +50,15 @@ const LEAGUES = [
 
 function LeaguesPanel({ onClose }: { onClose: () => void }) {
   const [joined, setJoined] = useState<number[]>([])
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      onClick={onClose}>
-      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4"
-        onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-foreground">Ligas disponibles</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Únete a una liga y compite por el premio</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="size-5" />
-          </button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
         </div>
         <div className="flex flex-col gap-4">
           {LEAGUES.map(league => {
@@ -80,8 +77,7 @@ function LeaguesPanel({ onClose }: { onClose: () => void }) {
                 <ul className="flex flex-col gap-2 mb-4">
                   {league.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                      <Check className="size-4 text-green-500 shrink-0 mt-0.5" />
-                      {f}
+                      <Check className="size-4 text-green-500 shrink-0 mt-0.5" />{f}
                     </li>
                   ))}
                   <li className="flex flex-col gap-1.5 mt-1">
@@ -98,9 +94,7 @@ function LeaguesPanel({ onClose }: { onClose: () => void }) {
                   </li>
                 </ul>
                 {isJoined ? (
-                  <div className="w-full rounded-xl bg-green-50 border border-green-200 py-3 text-center text-sm font-semibold text-green-600">
-                    ✓ Te has unido a la liga
-                  </div>
+                  <div className="w-full rounded-xl bg-green-50 border border-green-200 py-3 text-center text-sm font-semibold text-green-600">✓ Te has unido a la liga</div>
                 ) : (
                   <button onClick={() => setJoined(prev => [...prev, league.id])}
                     className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
@@ -127,87 +121,57 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
   const [asking, setAsking]     = useState(false)
 
   useEffect(() => {
-    fetch('/api/movers')
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false) })
-      .catch(() => setLoading(false))
+    fetch('/api/movers').then(r => r.json()).then(d => { setData(d); setLoading(false) }).catch(() => setLoading(false))
   }, [])
 
   async function handleAsk() {
     if (!question.trim()) return
-    setAsking(true)
-    setAnswer('')
+    setAsking(true); setAnswer('')
     await new Promise(r => setTimeout(r, 1000))
     setAnswer(`Análisis de "${question}": Esta funcionalidad se conectará próximamente a un modelo de IA financiera para darte insights y recomendaciones personalizadas basadas en datos reales del mercado.`)
     setAsking(false)
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      onClick={onClose}>
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4"
-        onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-foreground">Markets</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Mejores y peores del día · Cierre anterior</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="size-5" />
-          </button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
         </div>
-
         {loading && (
           <div className="grid grid-cols-2 gap-3 mb-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-14 rounded-xl bg-muted animate-pulse" />
-            ))}
+            {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-14 rounded-xl bg-muted animate-pulse" />)}
           </div>
         )}
-
         {!loading && data && (
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="size-4 text-green-500" />
-                <h3 className="text-sm font-semibold text-foreground">Daily Gainers</h3>
-              </div>
+              <div className="flex items-center gap-2 mb-3"><TrendingUp className="size-4 text-green-500" /><h3 className="text-sm font-semibold text-foreground">Daily Gainers</h3></div>
               <div className="flex flex-col gap-2">
                 {data.gainers.map(m => (
-                  <div key={m.ticker}
-                    className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-2.5 hover:bg-accent transition-colors">
-                    <div>
-                      <p className="text-sm font-bold text-foreground">{m.ticker}</p>
-                      <p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p>
-                    </div>
+                  <div key={m.ticker} className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-2.5 hover:bg-accent transition-colors">
+                    <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-green-500">+{m.change.toFixed(2)}%</span>
-                      <div className="flex size-5 items-center justify-center rounded-full bg-green-500">
-                        <TrendingUp className="size-3 text-white" />
-                      </div>
+                      <div className="flex size-5 items-center justify-center rounded-full bg-green-500"><TrendingUp className="size-3 text-white" /></div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingDown className="size-4 text-red-500" />
-                <h3 className="text-sm font-semibold text-foreground">Daily Losers</h3>
-              </div>
+              <div className="flex items-center gap-2 mb-3"><TrendingDown className="size-4 text-red-500" /><h3 className="text-sm font-semibold text-foreground">Daily Losers</h3></div>
               <div className="flex flex-col gap-2">
                 {data.losers.map(m => (
-                  <div key={m.ticker}
-                    className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-2.5 hover:bg-accent transition-colors">
-                    <div>
-                      <p className="text-sm font-bold text-foreground">{m.ticker}</p>
-                      <p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p>
-                    </div>
+                  <div key={m.ticker} className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-2.5 hover:bg-accent transition-colors">
+                    <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-red-500">{m.change.toFixed(2)}%</span>
-                      <div className="flex size-5 items-center justify-center rounded-full bg-red-500">
-                        <TrendingDown className="size-3 text-white" />
-                      </div>
+                      <div className="flex size-5 items-center justify-center rounded-full bg-red-500"><TrendingDown className="size-3 text-white" /></div>
                     </div>
                   </div>
                 ))}
@@ -215,30 +179,19 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         )}
-
         <div className="rounded-2xl border border-border bg-background p-4">
-          <p className="text-sm font-semibold text-foreground mb-3">
-            Ask Financial Agent to get insights &amp; potential recommendations
-          </p>
+          <p className="text-sm font-semibold text-foreground mb-3">Ask Financial Agent to get insights &amp; potential recommendations</p>
           <div className="flex gap-2">
-            <input
-              value={question}
-              onChange={e => setQuestion(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleAsk()}
+            <input value={question} onChange={e => setQuestion(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAsk()}
               placeholder="e.g. ¿Por qué está bajando TSLA? ¿Es buen momento para comprar NVDA?"
-              className="flex-1 h-10 rounded-xl border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/40"
-            />
+              className="flex-1 h-10 rounded-xl border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/40" />
             <button onClick={handleAsk} disabled={asking || !question.trim()}
               className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40">
               <Send className="size-4" />
             </button>
           </div>
           {asking && <p className="text-xs text-muted-foreground mt-3 animate-pulse">Analizando...</p>}
-          {answer && !asking && (
-            <div className="mt-3 rounded-xl bg-muted p-3">
-              <p className="text-sm text-foreground leading-relaxed">{answer}</p>
-            </div>
-          )}
+          {answer && !asking && <div className="mt-3 rounded-xl bg-muted p-3"><p className="text-sm text-foreground leading-relaxed">{answer}</p></div>}
         </div>
       </div>
     </div>
@@ -251,59 +204,126 @@ function CryptoBoostPanel({ onClose }: { onClose: () => void }) {
     'Incrementa la volatilidad de tu portfolio con activos de alto riesgo',
     'Inyecta rentabilidad diferencial vs el resto de usuarios',
   ]
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4"
-        onClick={e => e.stopPropagation()}>
-
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-orange-500">
-              <Zap className="size-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-foreground">Crypto Boost</h2>
-              <p className="text-xs text-muted-foreground">Activos digitales de alto rendimiento</p>
-            </div>
+            <div className="flex size-11 items-center justify-center rounded-xl bg-orange-500"><Zap className="size-5 text-white" /></div>
+            <div><h2 className="text-lg font-bold text-foreground">Crypto Boost</h2><p className="text-xs text-muted-foreground">Activos digitales de alto rendimiento</p></div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="size-5" />
-          </button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
         </div>
-
         <ul className="flex flex-col gap-3 mb-6">
           {features.map((f, i) => (
             <li key={i} className="flex items-start gap-3 rounded-xl bg-background border border-border px-4 py-3">
-              <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500 mt-0.5">
-                <Zap className="size-3 text-white" />
-              </div>
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500 mt-0.5"><Zap className="size-3 text-white" /></div>
+              <p className="text-sm text-foreground">{f}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs text-muted-foreground mb-4 px-1">⚠️ Los activos crypto conllevan un alto nivel de riesgo. Las posiciones pueden variar significativamente en cortos periodos de tiempo.</p>
+        <div className="flex items-center justify-between mb-4 rounded-xl bg-orange-50 border border-orange-200 px-4 py-3">
+          <div><p className="text-sm font-bold text-orange-600">Añadir exposición</p><p className="text-xs text-orange-400">Acceso completo a activos crypto</p></div>
+          <div className="text-right"><p className="text-xl font-black text-orange-600">5€</p><p className="text-xs text-orange-400">/mes</p></div>
+        </div>
+        <button onClick={onClose} className="w-full rounded-xl bg-orange-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+          Añadir exposición · 5€/mes
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function DegenTradePanel({ onClose }: { onClose: () => void }) {
+  const features = [
+    '¿Has escuchado sobre los degen trades?',
+    'Si tienes convicción con un movimiento, ves a por todas',
+    'Apalanca un trade y multiplica tus resultados',
+  ]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-red-500"><Flame className="size-5 text-white" /></div>
+            <div><h2 className="text-lg font-bold text-foreground">Degen Trade</h2><p className="text-xs text-muted-foreground">Apalancamiento para traders con convicción</p></div>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+        </div>
+
+        {/* Features */}
+        <ul className="flex flex-col gap-3 mb-6">
+          {features.map((f, i) => (
+            <li key={i} className="flex items-start gap-3 rounded-xl bg-background border border-border px-4 py-3">
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-red-500 mt-0.5"><Flame className="size-3 text-white" /></div>
               <p className="text-sm text-foreground">{f}</p>
             </li>
           ))}
         </ul>
 
-        <p className="text-xs text-muted-foreground mb-4 px-1">
-          ⚠️ Los activos crypto conllevan un alto nivel de riesgo. Las posiciones pueden variar significativamente en cortos periodos de tiempo.
-        </p>
-
-        <div className="flex items-center justify-between mb-4 rounded-xl bg-orange-50 border border-orange-200 px-4 py-3">
-          <div>
-            <p className="text-sm font-bold text-orange-600">Añadir exposición</p>
-            <p className="text-xs text-orange-400">Acceso completo a activos crypto</p>
+        {/* Opciones de apalancamiento */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          {/* 2x */}
+          <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-base font-black text-red-600">Apalanca 2x</p>
+                <p className="text-xs text-red-400">Duplica tu exposición</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-black text-red-600">4€</p>
+                <p className="text-xs text-red-400">/trade</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="w-full rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+              Añadir · 4€
+            </button>
           </div>
-          <div className="text-right">
-            <p className="text-xl font-black text-orange-600">5€</p>
-            <p className="text-xs text-orange-400">/mes</p>
+
+          {/* 3x */}
+          <div className="rounded-2xl border-2 border-red-400 bg-red-100 p-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-base font-black text-red-700">Apalanca 3x</p>
+                <p className="text-xs text-red-500">Triplica tu exposición</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-black text-red-700">6,50€</p>
+                <p className="text-xs text-red-500">/trade</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="w-full rounded-xl bg-red-700 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+              Añadir · 6,50€
+            </button>
           </div>
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full rounded-xl bg-orange-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
-          Añadir exposición · 5€/mes
-        </button>
+        {/* Disclaimer */}
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+          <p className="text-sm font-bold text-red-700 mb-3">⚠️ ¿Qué implica el Apalancamiento 2x?</p>
+          <p className="text-xs text-red-600 mb-3 leading-relaxed">
+            Al activar este boost, tanto tus ganancias como tus pérdidas se multiplicarán por dos.
+            Ejemplo si inviertes 100€ en Amazon (Posición real en mercado: 200€):
+          </p>
+          <ul className="flex flex-col gap-2">
+            <li className="flex items-start gap-2 text-xs text-red-600">
+              <span>🚀</span>
+              <span><strong>Si Amazon sube un 10%:</strong> Tú ganas un 20% (tu saldo sube a 120€).</span>
+            </li>
+            <li className="flex items-start gap-2 text-xs text-red-600">
+              <span>📉</span>
+              <span><strong>Si Amazon baja un 10%:</strong> Tú pierdes un 20% (tu saldo baja a 80€).</span>
+            </li>
+            <li className="flex items-start gap-2 text-xs text-red-600">
+              <span>💥</span>
+              <span><strong>Si Amazon baja un 50%:</strong> Tu posición se liquida automáticamente para devolver el préstamo y te quedas con 0€.</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   )
@@ -314,12 +334,14 @@ export function Sidebar() {
   const [showLeagues, setShowLeagues] = useState(false)
   const [showMarkets, setShowMarkets] = useState(false)
   const [showCrypto, setShowCrypto]   = useState(false)
+  const [showDegen, setShowDegen]     = useState(false)
 
   function handleNav(label: string) {
     setActive(label)
     if (label === 'Leagues')      setShowLeagues(true)
     if (label === 'Markets')      setShowMarkets(true)
     if (label === 'Crypto Boost') setShowCrypto(true)
+    if (label === 'Degen Trade')  setShowDegen(true)
   }
 
   return (
@@ -341,17 +363,22 @@ export function Sidebar() {
             const Icon     = item.icon
             const isActive = active === item.label
             const isCrypto = item.label === 'Crypto Boost'
+            const isDegen  = item.label === 'Degen Trade'
             return (
               <button key={item.label} onClick={() => handleNav(item.label)}
                 className={cn(
                   'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive && !isCrypto
-                    ? 'bg-primary text-primary-foreground shadow-sm'
+                  isActive && isDegen
+                    ? 'bg-red-500 text-white shadow-sm'
                     : isActive && isCrypto
                       ? 'bg-orange-500 text-white shadow-sm'
-                      : isCrypto
-                        ? 'text-orange-500 hover:bg-orange-50'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                      : isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : isDegen
+                          ? 'text-red-500 hover:bg-red-50'
+                          : isCrypto
+                            ? 'text-orange-500 hover:bg-orange-50'
+                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )}>
                 <Icon className="size-[18px]" />
                 {item.label}
@@ -385,6 +412,7 @@ export function Sidebar() {
       {showLeagues && <LeaguesPanel onClose={() => setShowLeagues(false)} />}
       {showMarkets && <MarketsPanel onClose={() => setShowMarkets(false)} />}
       {showCrypto  && <CryptoBoostPanel onClose={() => setShowCrypto(false)} />}
+      {showDegen   && <DegenTradePanel onClose={() => setShowDegen(false)} />}
     </>
   )
 }
