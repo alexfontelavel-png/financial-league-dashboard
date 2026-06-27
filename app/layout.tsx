@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Bull League — Stock Fantasy Dashboard',
+  title: 'Financial League — Stock Fantasy ',
   description:
     'Compete in stock fantasy leagues. Track your portfolio, trade stocks, and climb the leaderboard.',
   generator: 'v0.app',
