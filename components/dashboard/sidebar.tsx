@@ -12,6 +12,7 @@ import {
   X,
   TrendingDown,
   Send,
+  Zap,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
@@ -22,6 +23,7 @@ const nav = [
   { label: 'Portfolio', icon: Wallet },
   { label: 'Leagues', icon: Trophy },
   { label: 'Players', icon: Users },
+  { label: 'Crypto Boost', icon: Zap },
 ]
 
 const bottomNav = [
@@ -145,7 +147,6 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
       onClick={onClose}>
       <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4"
         onClick={e => e.stopPropagation()}>
-
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-foreground">Markets</h2>
@@ -189,7 +190,6 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
                 ))}
               </div>
             </div>
-
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <TrendingDown className="size-4 text-red-500" />
@@ -245,15 +245,81 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
+function CryptoBoostPanel({ onClose }: { onClose: () => void }) {
+  const features = [
+    'Añade las principales Criptomonedas a tu cartera',
+    'Incrementa la volatilidad de tu portfolio con activos de alto riesgo',
+    'Inyecta rentabilidad diferencial vs el resto de usuarios',
+  ]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4"
+        onClick={e => e.stopPropagation()}>
+
+        <div className="flex items-start justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-orange-500">
+              <Zap className="size-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Crypto Boost</h2>
+              <p className="text-xs text-muted-foreground">Activos digitales de alto rendimiento</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="size-5" />
+          </button>
+        </div>
+
+        <ul className="flex flex-col gap-3 mb-6">
+          {features.map((f, i) => (
+            <li key={i} className="flex items-start gap-3 rounded-xl bg-background border border-border px-4 py-3">
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500 mt-0.5">
+                <Zap className="size-3 text-white" />
+              </div>
+              <p className="text-sm text-foreground">{f}</p>
+            </li>
+          ))}
+        </ul>
+
+        <p className="text-xs text-muted-foreground mb-4 px-1">
+          ⚠️ Los activos crypto conllevan un alto nivel de riesgo. Las posiciones pueden variar significativamente en cortos periodos de tiempo.
+        </p>
+
+        <div className="flex items-center justify-between mb-4 rounded-xl bg-orange-50 border border-orange-200 px-4 py-3">
+          <div>
+            <p className="text-sm font-bold text-orange-600">Añadir exposición</p>
+            <p className="text-xs text-orange-400">Acceso completo a activos crypto</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xl font-black text-orange-600">5€</p>
+            <p className="text-xs text-orange-400">/mes</p>
+          </div>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="w-full rounded-xl bg-orange-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+          Añadir exposición · 5€/mes
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function Sidebar() {
   const [active, setActive]           = useState('Dashboard')
   const [showLeagues, setShowLeagues] = useState(false)
   const [showMarkets, setShowMarkets] = useState(false)
+  const [showCrypto, setShowCrypto]   = useState(false)
 
   function handleNav(label: string) {
     setActive(label)
-    if (label === 'Leagues') setShowLeagues(true)
-    if (label === 'Markets') setShowMarkets(true)
+    if (label === 'Leagues')      setShowLeagues(true)
+    if (label === 'Markets')      setShowMarkets(true)
+    if (label === 'Crypto Boost') setShowCrypto(true)
   }
 
   return (
@@ -274,13 +340,18 @@ export function Sidebar() {
           {nav.map((item) => {
             const Icon     = item.icon
             const isActive = active === item.label
+            const isCrypto = item.label === 'Crypto Boost'
             return (
               <button key={item.label} onClick={() => handleNav(item.label)}
                 className={cn(
                   'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive
+                  isActive && !isCrypto
                     ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                    : isActive && isCrypto
+                      ? 'bg-orange-500 text-white shadow-sm'
+                      : isCrypto
+                        ? 'text-orange-500 hover:bg-orange-50'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )}>
                 <Icon className="size-[18px]" />
                 {item.label}
@@ -313,6 +384,7 @@ export function Sidebar() {
 
       {showLeagues && <LeaguesPanel onClose={() => setShowLeagues(false)} />}
       {showMarkets && <MarketsPanel onClose={() => setShowMarkets(false)} />}
+      {showCrypto  && <CryptoBoostPanel onClose={() => setShowCrypto(false)} />}
     </>
   )
 }
