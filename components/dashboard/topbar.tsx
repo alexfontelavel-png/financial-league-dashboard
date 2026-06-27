@@ -16,6 +16,66 @@ interface Quote {
   change: number
 }
 
+const TICKER_DOMAINS: Record<string, string> = {
+  AAPL: 'apple.com', MSFT: 'microsoft.com', GOOGL: 'google.com',
+  GOOG: 'google.com', AMZN: 'amazon.com', META: 'meta.com',
+  TSLA: 'tesla.com', NVDA: 'nvidia.com', AMD: 'amd.com',
+  NFLX: 'netflix.com', PYPL: 'paypal.com', INTC: 'intel.com',
+  UBER: 'uber.com', SPOT: 'spotify.com', SHOP: 'shopify.com',
+  COIN: 'coinbase.com', PLTR: 'palantir.com', SNAP: 'snap.com',
+  BABA: 'alibaba.com', DIS: 'disney.com', BA: 'boeing.com',
+  JPM: 'jpmorganchase.com', V: 'visa.com', MA: 'mastercard.com',
+  WMT: 'walmart.com', JNJ: 'jnj.com', PG: 'pg.com',
+  KO: 'coca-cola.com', PEP: 'pepsico.com', MCD: 'mcdonalds.com',
+  SBUX: 'starbucks.com', NKE: 'nike.com', ADBE: 'adobe.com',
+  CRM: 'salesforce.com', ORCL: 'oracle.com', IBM: 'ibm.com',
+  QCOM: 'qualcomm.com', TXN: 'ti.com', AVGO: 'broadcom.com',
+  ARM: 'arm.com', RIVN: 'rivian.com', ABNB: 'airbnb.com',
+  LYFT: 'lyft.com', HOOD: 'robinhood.com', SOFI: 'sofi.com',
+  RBLX: 'roblox.com', TWLO: 'twilio.com', ZM: 'zoom.us',
+  NET: 'cloudflare.com', SNOW: 'snowflake.com', DDOG: 'datadoghq.com',
+  MDB: 'mongodb.com', DOCN: 'digitalocean.com', AMGN: 'amgen.com',
+  GILD: 'gilead.com', BMY: 'bms.com', PFE: 'pfizer.com',
+  MRNA: 'modernatx.com', LLY: 'lilly.com', UNH: 'unitedhealthgroup.com',
+  GS: 'goldmansachs.com', MS: 'morganstanley.com', BAC: 'bankofamerica.com',
+  WFC: 'wellsfargo.com', C: 'citi.com', BRK: 'berkshirehathaway.com',
+  XOM: 'exxonmobil.com', CVX: 'chevron.com', T: 'att.com',
+  VZ: 'verizon.com', CSCO: 'cisco.com', AMAT: 'appliedmaterials.com',
+}
+
+function TickerLogo({ ticker, name, size = 'sm' }: { ticker: string; name: string; size?: 'sm' | 'lg' }) {
+  const [imgError, setImgError] = useState(false)
+  const domain = TICKER_DOMAINS[ticker.toUpperCase()]
+  const logoUrl = domain ? `https://logo.clearbit.com/${domain}` : null
+  const dim = size === 'lg' ? { outer: '48px', inner: '32px', radius: '12px' } : { outer: '32px', inner: '20px', radius: '8px' }
+  const fontSize = size === 'lg' ? '14px' : '11px'
+
+  if (!imgError && logoUrl) {
+    return (
+      <div style={{
+        width: dim.outer, height: dim.outer, borderRadius: dim.radius,
+        background: '#fff', border: '1px solid #f0f0f0',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, overflow: 'hidden',
+      }}>
+        <img
+          src={logoUrl}
+          alt={name}
+          style={{ width: dim.inner, height: dim.inner, objectFit: 'contain' }}
+          onError={() => setImgError(true)}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex shrink-0 items-center justify-center rounded-lg bg-primary/10 font-bold text-primary"
+      style={{ width: dim.outer, height: dim.outer, borderRadius: dim.radius, fontSize }}>
+      {ticker.slice(0, 2)}
+    </div>
+  )
+}
+
 export function Topbar() {
   const [query, setQuery]               = useState('')
   const [results, setResults]           = useState<SearchResult[]>([])
@@ -98,9 +158,7 @@ export function Topbar() {
           ok: true,
           msg: `✓ Compra ejecutada: ${Number(data.shares).toFixed(4)} acc. de ${selected.ticker} a $${Number(data.price).toFixed(2)} · Cash restante: €${Number(data.cashAfter).toFixed(2)}`,
         })
-        // Refrescar el PortfolioCard automáticamente
         window.dispatchEvent(new Event('portfolio-updated'))
-        // Cerrar modal tras 2 segundos
         setTimeout(() => closeAll(), 2500)
       } else {
         setToast({ ok: false, msg: data.error ?? 'Error desconocido' })
@@ -152,9 +210,7 @@ export function Topbar() {
               {results.map(r => (
                 <button key={r.ticker} onMouseDown={() => selectTicker(r)}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-accent transition-colors border-b border-border last:border-0">
-                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
-                    {r.ticker.slice(0, 2)}
-                  </div>
+                  <TickerLogo ticker={r.ticker} name={r.name} size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground">{r.ticker}</p>
                     <p className="truncate text-xs text-muted-foreground">{r.name}</p>
@@ -195,9 +251,7 @@ export function Topbar() {
               <>
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary">
-                      {selected.ticker.slice(0, 2)}
-                    </div>
+                    <TickerLogo ticker={selected.ticker} name={selected.name} size="lg" />
                     <div>
                       <h2 className="text-lg font-bold text-foreground">{selected.ticker}</h2>
                       <p className="text-xs text-muted-foreground">{selected.name}</p>
@@ -292,7 +346,6 @@ export function Topbar() {
                       </div>
                     )}
 
-                    {/* Toast resultado */}
                     {toast && (
                       <div className={`rounded-xl px-3 py-2.5 text-xs leading-snug ${toast.ok ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
                         {toast.msg}
