@@ -41,10 +41,10 @@ export function Topbar() {
     setResults([])
     setQuoteLoading(true)
     try {
-      const res = await fetch(`/api/prices`)
-      const prices = await res.json()
-      if (prices[r.ticker]) {
-        setSelected({ ticker: r.ticker, name: r.name, price: prices[r.ticker].price, change: prices[r.ticker].change })
+      const res = await fetch(`/api/quote?ticker=${r.ticker}`)
+      if (res.ok) {
+        const data = await res.json()
+        setSelected({ ticker: r.ticker, name: r.name, price: data.price, change: data.change })
       } else {
         setSelected({ ticker: r.ticker, name: r.name, price: 0, change: 0 })
       }
@@ -152,7 +152,7 @@ export function Topbar() {
                 <p className="text-xs text-muted-foreground mb-4">
                   {selected.price > 0
                     ? 'Precio de cierre del día anterior vía Polygon.io'
-                    : 'Este ticker no está en tu portfolio actual. Añade datos de mercado para verlo.'}
+                    : 'No hay datos disponibles para este ticker.'}
                 </p>
 
                 <button
