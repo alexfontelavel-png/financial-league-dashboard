@@ -20,32 +20,33 @@ interface PortfolioData {
   }>
 }
 
-function AreaSparkline({ data }: { data: number[] }) {
+function AreaSparkline({ data, positive }: { data: number[]; positive: boolean }) {
   if (data.length < 2) return null
   const width  = 520
-  const height = 130
+  const height = 80
   const min    = Math.min(...data)
   const max    = Math.max(...data)
   const range  = max - min || 1
   const stepX  = width / (data.length - 1)
   const points = data.map((v, i) => {
     const x = i * stepX
-    const y = height - ((v - min) / range) * (height - 16) - 8
+    const y = height - ((v - min) / range) * (height - 8) - 4
     return [x, y] as const
   })
   const linePath = points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`).join(' ')
   const areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`
+  const color = positive ? '#16a34a' : '#ef4444'
+
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-32 w-full"
-      role="img" aria-label="Portfolio value trend">
+    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="h-20 w-full">
       <defs>
-        <linearGradient id="equityFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.12" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={areaPath} fill="url(#equityFill)" />
-      <path d={linePath} fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={areaPath} fill="url(#sparkFill)" />
+      <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -81,72 +82,107 @@ export function PortfolioCard() {
     : [10000, 10000]
 
   return (
-    <section className="rounded-3xl bg-primary p-6 text-primary-foreground shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-primary-foreground/70">Total Portfolio Value</p>
-          {loading ? (
-            <div className="mt-2 h-10 w-36 rounded-lg bg-primary-foreground/20 animate-pulse" />
-          ) : (
-            <p className="mt-2 text-4xl font-semibold tracking-tight">{formatEuro(totalValue)}</p>
-          )}
-          {!loading && (
-            <div className="mt-3 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2.5 py-1 text-xs font-semibold">
-                {isPos ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
-                {isPos ? '+' : ''}{roiPct.toFixed(2)}%
-              </span>
-              <span className="text-sm text-primary-foreground/70">
-                {isPos ? '+' : ''}{formatEuro(roiAbs)} this season
-              </span>
-            </div>
-          )}
+    <section style={{
+      background: '#ffffff',
+      borderRadius: '20px',
+      border: '1px solid #f0f0f0',
+      boxShadow: '0 1px 4px rgba(0,0,0,0.06), 0 4px 24px rgba(0,0,0,0.04)',
+      padding: '28px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0',
+    }}>
+      {/* Label */}
+      <p style={{ fontSize: '12px', fontWeight: 500, color: '#9ca3af', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px' }}>
+        Total Portfolio Value
+      </p>
+
+      {/* Valor principal */}
+      {loading ? (
+        <div style={{ height: '48px', width: '160px', background: '#f5f5f5', borderRadius: '8px', marginBottom: '8px' }} />
+      ) : (
+        <p style={{ fontSize: '42px', fontWeight: 900, color: '#0a0a0a', lineHeight: 1, letterSpacing: '-0.02em', marginBottom: '10px' }}>
+          {formatEuro(totalValue)}
+        </p>
+      )}
+
+      {/* Badge ROI */}
+      {!loading && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '3px',
+            background: isPos ? '#f0fdf4' : '#fef2f2',
+            color: isPos ? '#16a34a' : '#ef4444',
+            fontSize: '12px', fontWeight: 700,
+            padding: '4px 10px', borderRadius: '100px',
+          }}>
+            {isPos ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+            {isPos ? '+' : ''}{roiPct.toFixed(2)}%
+          </span>
+          <span style={{ fontSize: '13px', color: '#9ca3af' }}>
+            {isPos ? '+' : ''}{formatEuro(roiAbs)} this season
+          </span>
         </div>
-        <div className="flex size-11 items-center justify-center rounded-2xl bg-primary-foreground/15">
-          <Wallet className="size-5" />
-        </div>
+      )}
+
+      {/* Sparkline */}
+      <div style={{ marginLeft: '-4px', marginRight: '-4px', marginBottom: '20px' }}>
+        <AreaSparkline data={sparkData} positive={isPos} />
       </div>
 
-      <div className="-mx-1 mt-4">
-        <AreaSparkline data={sparkData} />
-      </div>
+      {/* Divider */}
+      <div style={{ height: '1px', background: '#f5f5f5', marginBottom: '20px' }} />
 
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-primary-foreground/10 p-4">
-          <div className="flex items-center gap-2 text-primary-foreground/70">
-            <Coins className="size-4" />
-            <span className="text-xs font-medium">Invested</span>
+      {/* KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: investedValue > 0 ? '20px' : '0' }}>
+        <div style={{ background: '#fafafa', borderRadius: '14px', padding: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+            <Coins size={13} color="#9ca3af" />
+            <span style={{ fontSize: '11px', fontWeight: 500, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Invested</span>
           </div>
           {loading
-            ? <div className="mt-1.5 h-6 w-24 rounded bg-primary-foreground/20 animate-pulse" />
-            : <p className="mt-1.5 text-lg font-semibold">{formatEuro(investedValue)}</p>
+            ? <div style={{ height: '24px', width: '80px', background: '#ebebeb', borderRadius: '6px' }} />
+            : <p style={{ fontSize: '18px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.01em' }}>{formatEuro(investedValue)}</p>
           }
         </div>
-        <div className="rounded-2xl bg-primary-foreground/10 p-4">
-          <div className="flex items-center gap-2 text-primary-foreground/70">
-            <Wallet className="size-4" />
-            <span className="text-xs font-medium">Cash</span>
+        <div style={{ background: '#fafafa', borderRadius: '14px', padding: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+            <Wallet size={13} color="#9ca3af" />
+            <span style={{ fontSize: '11px', fontWeight: 500, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cash</span>
           </div>
           {loading
-            ? <div className="mt-1.5 h-6 w-24 rounded bg-primary-foreground/20 animate-pulse" />
-            : <p className="mt-1.5 text-lg font-semibold">{formatEuro(cashBalance)}</p>
+            ? <div style={{ height: '24px', width: '80px', background: '#ebebeb', borderRadius: '6px' }} />
+            : <p style={{ fontSize: '18px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.01em' }}>{formatEuro(cashBalance)}</p>
           }
         </div>
       </div>
 
+      {/* Posiciones */}
       {!loading && data && data.positions.length > 0 && (
-        <div className="mt-4 rounded-2xl bg-primary-foreground/10 p-4">
-          <p className="text-xs font-medium text-primary-foreground/70 mb-3">Posiciones abiertas</p>
-          <div className="flex flex-col gap-2">
+        <div>
+          <div style={{ height: '1px', background: '#f5f5f5', marginBottom: '16px' }} />
+          <p style={{ fontSize: '11px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+            Posiciones abiertas
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {data.positions.map(pos => (
-              <div key={pos.ticker} className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold">{pos.ticker}</p>
-                  <p className="text-xs text-primary-foreground/60">{pos.shares.toFixed(4)} acc. · ${pos.current_price.toFixed(2)}</p>
+              <div key={pos.ticker} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '32px', height: '32px', borderRadius: '8px',
+                    background: '#f5f5f5', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#0a0a0a'
+                  }}>
+                    {pos.ticker.slice(0, 2)}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a', lineHeight: 1.2 }}>{pos.ticker}</p>
+                    <p style={{ fontSize: '11px', color: '#9ca3af', lineHeight: 1.2 }}>{pos.shares.toFixed(2)} acc.</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold">{formatEuro(pos.current_value)}</p>
-                  <p className={`text-xs font-semibold ${pos.pnl_pct >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a' }}>{formatEuro(pos.current_value)}</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: pos.pnl_pct >= 0 ? '#16a34a' : '#ef4444' }}>
                     {pos.pnl_pct >= 0 ? '+' : ''}{pos.pnl_pct.toFixed(2)}%
                   </p>
                 </div>
