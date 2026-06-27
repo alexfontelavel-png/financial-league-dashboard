@@ -16,33 +16,32 @@ async function polygonFetch<T>(path: string, params?: Record<string, string>): P
   const url = new URL(`${BASE}${path}`)
   url.searchParams.set('apiKey', process.env.POLYGON_API_KEY ?? '')
   if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
-  const res = await fetch(url.toString(), { next: { revalidate: 30 } })
-  if (!res.ok) throw new Error(`Polygon ${res.status}`)
+  const res = await fetch(url.toString(), { next: { revalidate: 3600 } })
+  if (!res.ok) throw new Error(`Polygon ${res.status}: ${await res.text()}`)
   return res.json()
 }
 
 export async function getSnapshot(ticker: string): Promise<TickerQuote> {
   const data = await polygonFetch<{
-    ticker: {
-      ticker: string
-      todaysChangePerc: number
-      todaysChange: number
-      day: { o: number; h: number; l: number; c: number; v: number }
-      min: { c: number }
-    }
-  }>(`/v2/snapshot/locale/us/markets/stocks/tickers/${ticker.toUpperCase()}`)
+    results: Array<{ o: number; h: number; l: number; c: number; v: number }>
+    ticker: string
+  }>(`/v2/aggs/ticker/${ticker.toUpperCase()}/prev`, { adjusted: 'true' })
 
-  const s = data.ticker
+  const r = data.results?.[0]
+  if (!r) throw new Error(`No data for ${ticker}`)
+
+  const change = ((r.c - r.o) / r.o) * 100
+
   return {
-    ticker: s.ticker,
-    price: s.min?.c ?? s.day?.c ?? 0,
-    open: s.day?.o ?? 0,
-    high: s.day?.h ?? 0,
-    low: s.day?.l ?? 0,
-    volume: s.day?.v ?? 0,
-    change: s.todaysChange ?? 0,
-    changePercent: s.todaysChangePerc ?? 0,
-    marketStatus: 'open',
+    ticker:        ticker.toUpperCase(),
+    price:         r.c,
+    open:          r.o,
+    high:          r.h,
+    low:           r.l,
+    volume:        r.v,
+    change:        parseFloat((r.c - r.o).toFixed(4)),
+    changePercent: parseFloat(change.toFixed(2)),
+    marketStatus:  'closed',
   }
 }
 
