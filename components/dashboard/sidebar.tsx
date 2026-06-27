@@ -130,8 +130,17 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
   async function handleAsk() {
     if (!question.trim()) return
     setAsking(true); setAnswer('')
-    await new Promise(r => setTimeout(r, 1000))
-    setAnswer(`Análisis de "${question}": Esta funcionalidad se conectará próximamente a un modelo de IA financiera para darte insights y recomendaciones personalizadas basadas en datos reales del mercado.`)
+    try {
+      const res = await fetch('/api/market-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      })
+      const data = await res.json()
+      setAnswer(data.answer ?? 'No se pudo obtener respuesta.')
+    } catch {
+      setAnswer('Error conectando con el agente. Inténtalo de nuevo.')
+    }
     setAsking(false)
   }
 
@@ -193,8 +202,12 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
               <Send className="size-4" />
             </button>
           </div>
-          {asking && <p className="text-xs text-muted-foreground mt-3 animate-pulse">Analizando...</p>}
-          {answer && !asking && <div className="mt-3 rounded-xl bg-muted p-3"><p className="text-sm text-foreground leading-relaxed">{answer}</p></div>}
+          {asking && <p className="text-xs text-muted-foreground mt-3 animate-pulse">Consultando con Gemini AI...</p>}
+          {answer && !asking && (
+            <div className="mt-3 rounded-xl bg-muted p-3 max-h-48 overflow-y-auto">
+              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{answer}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -240,21 +253,20 @@ function CryptoBoostPanel({ onClose }: { onClose: () => void }) {
 
 interface SearchResult { ticker: string; name: string; exchange: string }
 
-function DegenTradeOrder({ leverage, price: fixedPrice, onBack, onClose }: {
+function DegenTradeOrder({ leverage, onBack, onClose }: {
   leverage: 2 | 3
-  price: number
   onBack: () => void
   onClose: () => void
 }) {
-  const [ticker, setTicker]       = useState('')
+  const [ticker, setTicker]             = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
-  const [searching, setSearching] = useState(false)
-  const [quotePrice, setQuotePrice] = useState<number | null>(null)
+  const [searching, setSearching]       = useState(false)
+  const [quotePrice, setQuotePrice]     = useState<number | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
-  const [mode, setMode]           = useState<'shares' | 'amount'>('shares')
-  const [shares, setShares]       = useState(1)
-  const [amount, setAmount]       = useState('')
-  const [confirmed, setConfirmed] = useState(false)
+  const [mode, setMode]                 = useState<'shares' | 'amount'>('shares')
+  const [shares, setShares]             = useState(1)
+  const [amount, setAmount]             = useState('')
+  const [confirmed, setConfirmed]       = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const price = quotePrice ?? 0
@@ -308,7 +320,6 @@ function DegenTradeOrder({ leverage, price: fixedPrice, onBack, onClose }: {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm">← Volver</button>
         <div className="flex-1">
@@ -317,7 +328,6 @@ function DegenTradeOrder({ leverage, price: fixedPrice, onBack, onClose }: {
         </div>
       </div>
 
-      {/* Buscador de ticker */}
       <div className="relative">
         <div className="flex items-center gap-2 bg-background rounded-xl border border-border px-3 py-2.5 focus-within:border-red-400 transition-colors">
           <Search className="size-4 text-muted-foreground shrink-0" />
@@ -349,7 +359,6 @@ function DegenTradeOrder({ leverage, price: fixedPrice, onBack, onClose }: {
         )}
       </div>
 
-      {/* Toggle modo */}
       <div className="flex rounded-xl border border-border overflow-hidden">
         <button onClick={() => setMode('shares')}
           className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'shares' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-accent'}`}>
@@ -361,7 +370,6 @@ function DegenTradeOrder({ leverage, price: fixedPrice, onBack, onClose }: {
         </button>
       </div>
 
-      {/* Input por acciones */}
       {mode === 'shares' && (
         <div>
           <p className="text-xs text-muted-foreground mb-2">Número de acciones</p>
@@ -393,7 +401,6 @@ function DegenTradeOrder({ leverage, price: fixedPrice, onBack, onClose }: {
         </div>
       )}
 
-      {/* Input por importe */}
       {mode === 'amount' && (
         <div>
           <p className="text-xs text-muted-foreground mb-2">Importe en euros</p>
@@ -422,7 +429,6 @@ function DegenTradeOrder({ leverage, price: fixedPrice, onBack, onClose }: {
         </div>
       )}
 
-      {/* Botón confirmar */}
       <button
         onClick={() => { if (ticker && (mode === 'shares' ? price > 0 : parseFloat(amount) > 0)) setConfirmed(true) }}
         disabled={!ticker || !price || (mode === 'amount' && parseFloat(amount) <= 0)}
@@ -445,17 +451,10 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
-
         {selectedLeverage ? (
-          <DegenTradeOrder
-            leverage={selectedLeverage}
-            price={0}
-            onBack={() => setSelectedLeverage(null)}
-            onClose={onClose}
-          />
+          <DegenTradeOrder leverage={selectedLeverage} onBack={() => setSelectedLeverage(null)} onClose={onClose} />
         ) : (
           <>
-            {/* Header */}
             <div className="flex items-start justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="flex size-11 items-center justify-center rounded-xl bg-red-500"><Flame className="size-5 text-white" /></div>
@@ -464,7 +463,6 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
               <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
             </div>
 
-            {/* Features */}
             <ul className="flex flex-col gap-3 mb-6">
               {features.map((f, i) => (
                 <li key={i} className="flex items-start gap-3 rounded-xl bg-background border border-border px-4 py-3">
@@ -474,7 +472,6 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
               ))}
             </ul>
 
-            {/* Opciones */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
@@ -498,7 +495,6 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
               </div>
             </div>
 
-            {/* Disclaimer */}
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
               <p className="text-sm font-bold text-red-700 mb-3">⚠️ ¿Qué implica el Apalancamiento 2x?</p>
               <p className="text-xs text-red-600 mb-3 leading-relaxed">
@@ -506,15 +502,9 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
                 Ejemplo si inviertes 100€ en Amazon (Posición real en mercado: 200€):
               </p>
               <ul className="flex flex-col gap-2">
-                <li className="flex items-start gap-2 text-xs text-red-600">
-                  <span>🚀</span><span><strong>Si Amazon sube un 10%:</strong> Tú ganas un 20% (tu saldo sube a 120€).</span>
-                </li>
-                <li className="flex items-start gap-2 text-xs text-red-600">
-                  <span>📉</span><span><strong>Si Amazon baja un 10%:</strong> Tú pierdes un 20% (tu saldo baja a 80€).</span>
-                </li>
-                <li className="flex items-start gap-2 text-xs text-red-600">
-                  <span>💥</span><span><strong>Si Amazon baja un 50%:</strong> Tu posición se liquida automáticamente para devolver el préstamo y te quedas con 0€.</span>
-                </li>
+                <li className="flex items-start gap-2 text-xs text-red-600"><span>🚀</span><span><strong>Si Amazon sube un 10%:</strong> Tú ganas un 20% (tu saldo sube a 120€).</span></li>
+                <li className="flex items-start gap-2 text-xs text-red-600"><span>📉</span><span><strong>Si Amazon baja un 10%:</strong> Tú pierdes un 20% (tu saldo baja a 80€).</span></li>
+                <li className="flex items-start gap-2 text-xs text-red-600"><span>💥</span><span><strong>Si Amazon baja un 50%:</strong> Tu posición se liquida automáticamente para devolver el préstamo y te quedas con 0€.</span></li>
               </ul>
             </div>
           </>
