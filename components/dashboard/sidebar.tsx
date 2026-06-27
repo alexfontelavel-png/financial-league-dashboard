@@ -14,8 +14,11 @@ import {
   Send,
   Zap,
   Flame,
+  Search,
+  Plus,
+  Minus,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 
 const nav = [
@@ -235,7 +238,204 @@ function CryptoBoostPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
+interface SearchResult { ticker: string; name: string; exchange: string }
+
+function DegenTradeOrder({ leverage, price: fixedPrice, onBack, onClose }: {
+  leverage: 2 | 3
+  price: number
+  onBack: () => void
+  onClose: () => void
+}) {
+  const [ticker, setTicker]       = useState('')
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [searching, setSearching] = useState(false)
+  const [quotePrice, setQuotePrice] = useState<number | null>(null)
+  const [quoteLoading, setQuoteLoading] = useState(false)
+  const [mode, setMode]           = useState<'shares' | 'amount'>('shares')
+  const [shares, setShares]       = useState(1)
+  const [amount, setAmount]       = useState('')
+  const [confirmed, setConfirmed] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const price = quotePrice ?? 0
+
+  useEffect(() => {
+    if (ticker.length < 1) { setSearchResults([]); return }
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true)
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(ticker)}`)
+        setSearchResults(await res.json())
+      } catch { setSearchResults([]) }
+      setSearching(false)
+    }, 350)
+  }, [ticker])
+
+  async function selectTicker(r: SearchResult) {
+    setTicker(r.ticker)
+    setSearchResults([])
+    setQuoteLoading(true)
+    try {
+      const res = await fetch(`/api/quote?ticker=${r.ticker}`)
+      if (res.ok) { const d = await res.json(); setQuotePrice(d.price) }
+    } catch { setQuotePrice(null) }
+    setQuoteLoading(false)
+  }
+
+  const totalByShares  = price > 0 ? shares * price : 0
+  const sharesByAmount = price > 0 && parseFloat(amount) > 0 ? parseFloat(amount) / price : 0
+  const exposureShares = totalByShares * leverage
+  const exposureAmount = parseFloat(amount) > 0 ? parseFloat(amount) * leverage : 0
+
+  if (confirmed) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-6 text-center">
+        <div className="flex size-16 items-center justify-center rounded-full bg-red-100">
+          <Flame className="size-8 text-red-500" />
+        </div>
+        <h3 className="text-lg font-bold text-foreground">¡Degen Trade activado!</h3>
+        <p className="text-sm text-muted-foreground">
+          Tu trade {leverage}x en <strong>{ticker}</strong> ha sido registrado.<br />
+          Exposición real: <strong>${(mode === 'shares' ? exposureShares : exposureAmount).toFixed(2)}</strong>
+        </p>
+        <button onClick={onClose} className="w-full rounded-xl bg-red-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+          Cerrar
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm">← Volver</button>
+        <div className="flex-1">
+          <p className="text-base font-bold text-red-600">Degen Trade {leverage}x</p>
+          <p className="text-xs text-muted-foreground">Coste: {leverage === 2 ? '4€' : '6,50€'} · Selecciona acción y cantidad</p>
+        </div>
+      </div>
+
+      {/* Buscador de ticker */}
+      <div className="relative">
+        <div className="flex items-center gap-2 bg-background rounded-xl border border-border px-3 py-2.5 focus-within:border-red-400 transition-colors">
+          <Search className="size-4 text-muted-foreground shrink-0" />
+          <input
+            value={ticker}
+            onChange={e => { setTicker(e.target.value.toUpperCase()); setQuotePrice(null) }}
+            placeholder="Buscar acción... AAPL, TSLA, NVDA"
+            className="bg-transparent text-sm font-mono font-bold text-foreground placeholder:text-muted-foreground outline-none flex-1"
+          />
+          {quoteLoading && <span className="text-xs text-muted-foreground animate-pulse">Cargando...</span>}
+          {quotePrice && !quoteLoading && <span className="text-sm font-bold text-foreground shrink-0">${quotePrice.toFixed(2)}</span>}
+        </div>
+        {(searchResults.length > 0 || searching) && (
+          <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-border bg-card shadow-lg overflow-hidden">
+            {searching && <p className="px-4 py-3 text-xs text-muted-foreground">Buscando...</p>}
+            {searchResults.slice(0, 5).map(r => (
+              <button key={r.ticker} onMouseDown={() => selectTicker(r)}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-accent transition-colors border-b border-border last:border-0">
+                <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-red-100 text-[10px] font-bold text-red-600">
+                  {r.ticker.slice(0, 2)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground">{r.ticker}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{r.name}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Toggle modo */}
+      <div className="flex rounded-xl border border-border overflow-hidden">
+        <button onClick={() => setMode('shares')}
+          className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'shares' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-accent'}`}>
+          Por acciones
+        </button>
+        <button onClick={() => setMode('amount')}
+          className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'amount' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-accent'}`}>
+          Por importe
+        </button>
+      </div>
+
+      {/* Input por acciones */}
+      {mode === 'shares' && (
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Número de acciones</p>
+          <div className="flex items-center gap-3">
+            <button onClick={() => setShares(s => Math.max(1, s - 1))}
+              className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors">
+              <Minus className="size-4" />
+            </button>
+            <input type="number" value={shares} min={1}
+              onChange={e => setShares(Math.max(1, parseInt(e.target.value) || 1))}
+              className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-center text-sm font-bold text-foreground outline-none" />
+            <button onClick={() => setShares(s => s + 1)}
+              className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors">
+              <Plus className="size-4" />
+            </button>
+          </div>
+          {price > 0 && (
+            <div className="mt-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 flex flex-col gap-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Tu inversión ({shares} acc.)</span>
+                <span className="font-semibold text-foreground">${totalByShares.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-red-600 font-semibold">Exposición real {leverage}x</span>
+                <span className="font-black text-red-600">${exposureShares.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Input por importe */}
+      {mode === 'amount' && (
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Importe en euros</p>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">€</span>
+            <input type="number" value={amount} min={0} placeholder="0.00"
+              onChange={e => setAmount(e.target.value)}
+              className="w-full h-10 rounded-xl border border-border bg-background pl-7 pr-3 text-sm font-bold text-foreground outline-none" />
+          </div>
+          {parseFloat(amount) > 0 && price > 0 && (
+            <div className="mt-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 flex flex-col gap-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Acciones aproximadas</span>
+                <span className="font-semibold text-foreground">{sharesByAmount.toFixed(4)} acc.</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Precio por acción</span>
+                <span className="font-semibold text-foreground">${price.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-xs border-t border-red-200 pt-1 mt-1">
+                <span className="text-red-600 font-semibold">Exposición real {leverage}x</span>
+                <span className="font-black text-red-600">${exposureAmount.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Botón confirmar */}
+      <button
+        onClick={() => { if (ticker && (mode === 'shares' ? price > 0 : parseFloat(amount) > 0)) setConfirmed(true) }}
+        disabled={!ticker || !price || (mode === 'amount' && parseFloat(amount) <= 0)}
+        className="w-full rounded-xl bg-red-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-40">
+        Confirmar Degen Trade {leverage}x · {leverage === 2 ? '4€' : '6,50€'}
+      </button>
+    </div>
+  )
+}
+
 function DegenTradePanel({ onClose }: { onClose: () => void }) {
+  const [selectedLeverage, setSelectedLeverage] = useState<2 | 3 | null>(null)
+
   const features = [
     '¿Has escuchado sobre los degen trades?',
     'Si tienes convicción con un movimiento, ves a por todas',
@@ -246,84 +446,79 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
 
-        {/* Header */}
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-red-500"><Flame className="size-5 text-white" /></div>
-            <div><h2 className="text-lg font-bold text-foreground">Degen Trade</h2><p className="text-xs text-muted-foreground">Apalancamiento para traders con convicción</p></div>
-          </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
-        </div>
-
-        {/* Features */}
-        <ul className="flex flex-col gap-3 mb-6">
-          {features.map((f, i) => (
-            <li key={i} className="flex items-start gap-3 rounded-xl bg-background border border-border px-4 py-3">
-              <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-red-500 mt-0.5"><Flame className="size-3 text-white" /></div>
-              <p className="text-sm text-foreground">{f}</p>
-            </li>
-          ))}
-        </ul>
-
-        {/* Opciones de apalancamiento */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {/* 2x */}
-          <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-base font-black text-red-600">Apalanca 2x</p>
-                <p className="text-xs text-red-400">Duplica tu exposición</p>
+        {selectedLeverage ? (
+          <DegenTradeOrder
+            leverage={selectedLeverage}
+            price={0}
+            onBack={() => setSelectedLeverage(null)}
+            onClose={onClose}
+          />
+        ) : (
+          <>
+            {/* Header */}
+            <div className="flex items-start justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="flex size-11 items-center justify-center rounded-xl bg-red-500"><Flame className="size-5 text-white" /></div>
+                <div><h2 className="text-lg font-bold text-foreground">Degen Trade</h2><p className="text-xs text-muted-foreground">Apalancamiento para traders con convicción</p></div>
               </div>
-              <div className="text-right">
-                <p className="text-xl font-black text-red-600">4€</p>
-                <p className="text-xs text-red-400">/trade</p>
+              <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+            </div>
+
+            {/* Features */}
+            <ul className="flex flex-col gap-3 mb-6">
+              {features.map((f, i) => (
+                <li key={i} className="flex items-start gap-3 rounded-xl bg-background border border-border px-4 py-3">
+                  <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-red-500 mt-0.5"><Flame className="size-3 text-white" /></div>
+                  <p className="text-sm text-foreground">{f}</p>
+                </li>
+              ))}
+            </ul>
+
+            {/* Opciones */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div><p className="text-base font-black text-red-600">Apalanca 2x</p><p className="text-xs text-red-400">Duplica tu exposición</p></div>
+                  <div className="text-right"><p className="text-xl font-black text-red-600">4€</p><p className="text-xs text-red-400">/trade</p></div>
+                </div>
+                <button onClick={() => setSelectedLeverage(2)}
+                  className="w-full rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+                  Añadir · 4€
+                </button>
+              </div>
+              <div className="rounded-2xl border-2 border-red-400 bg-red-100 p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div><p className="text-base font-black text-red-700">Apalanca 3x</p><p className="text-xs text-red-500">Triplica tu exposición</p></div>
+                  <div className="text-right"><p className="text-xl font-black text-red-700">6,50€</p><p className="text-xs text-red-500">/trade</p></div>
+                </div>
+                <button onClick={() => setSelectedLeverage(3)}
+                  className="w-full rounded-xl bg-red-700 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+                  Añadir · 6,50€
+                </button>
               </div>
             </div>
-            <button onClick={onClose} className="w-full rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
-              Añadir · 4€
-            </button>
-          </div>
 
-          {/* 3x */}
-          <div className="rounded-2xl border-2 border-red-400 bg-red-100 p-4 flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-base font-black text-red-700">Apalanca 3x</p>
-                <p className="text-xs text-red-500">Triplica tu exposición</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xl font-black text-red-700">6,50€</p>
-                <p className="text-xs text-red-500">/trade</p>
-              </div>
+            {/* Disclaimer */}
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-bold text-red-700 mb-3">⚠️ ¿Qué implica el Apalancamiento 2x?</p>
+              <p className="text-xs text-red-600 mb-3 leading-relaxed">
+                Al activar este boost, tanto tus ganancias como tus pérdidas se multiplicarán por dos.
+                Ejemplo si inviertes 100€ en Amazon (Posición real en mercado: 200€):
+              </p>
+              <ul className="flex flex-col gap-2">
+                <li className="flex items-start gap-2 text-xs text-red-600">
+                  <span>🚀</span><span><strong>Si Amazon sube un 10%:</strong> Tú ganas un 20% (tu saldo sube a 120€).</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs text-red-600">
+                  <span>📉</span><span><strong>Si Amazon baja un 10%:</strong> Tú pierdes un 20% (tu saldo baja a 80€).</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs text-red-600">
+                  <span>💥</span><span><strong>Si Amazon baja un 50%:</strong> Tu posición se liquida automáticamente para devolver el préstamo y te quedas con 0€.</span>
+                </li>
+              </ul>
             </div>
-            <button onClick={onClose} className="w-full rounded-xl bg-red-700 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
-              Añadir · 6,50€
-            </button>
-          </div>
-        </div>
-
-        {/* Disclaimer */}
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-bold text-red-700 mb-3">⚠️ ¿Qué implica el Apalancamiento 2x?</p>
-          <p className="text-xs text-red-600 mb-3 leading-relaxed">
-            Al activar este boost, tanto tus ganancias como tus pérdidas se multiplicarán por dos.
-            Ejemplo si inviertes 100€ en Amazon (Posición real en mercado: 200€):
-          </p>
-          <ul className="flex flex-col gap-2">
-            <li className="flex items-start gap-2 text-xs text-red-600">
-              <span>🚀</span>
-              <span><strong>Si Amazon sube un 10%:</strong> Tú ganas un 20% (tu saldo sube a 120€).</span>
-            </li>
-            <li className="flex items-start gap-2 text-xs text-red-600">
-              <span>📉</span>
-              <span><strong>Si Amazon baja un 10%:</strong> Tú pierdes un 20% (tu saldo baja a 80€).</span>
-            </li>
-            <li className="flex items-start gap-2 text-xs text-red-600">
-              <span>💥</span>
-              <span><strong>Si Amazon baja un 50%:</strong> Tu posición se liquida automáticamente para devolver el préstamo y te quedas con 0€.</span>
-            </li>
-          </ul>
-        </div>
+          </>
+        )}
       </div>
     </div>
   )
