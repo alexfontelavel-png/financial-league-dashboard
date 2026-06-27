@@ -1,14 +1,14 @@
 'use client'
 import { ArrowUpRight, ArrowDownRight, Wallet, Coins } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { formatEuro, formatPct } from '@/lib/format'
+import { useEffect, useState, useCallback } from 'react'
+import { formatEuro } from '@/lib/format'
 
 interface PortfolioData {
   cash_balance:   number
   total_value:    number
   invested_value: number
   roi_pct:        number
-  positions:      Array<{
+  positions: Array<{
     ticker:        string
     company_name:  string
     shares:        number
@@ -54,12 +54,20 @@ export function PortfolioCard() {
   const [data, setData]       = useState<PortfolioData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetch('/api/portfolio')
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false) })
-      .catch(() => setLoading(false))
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch('/api/portfolio')
+      if (res.ok) setData(await res.json())
+    } catch {} finally {
+      setLoading(false)
+    }
   }, [])
+
+  useEffect(() => {
+    fetchData()
+    window.addEventListener('portfolio-updated', fetchData)
+    return () => window.removeEventListener('portfolio-updated', fetchData)
+  }, [fetchData])
 
   const totalValue    = data?.total_value    ?? 10000
   const cashBalance   = data?.cash_balance   ?? 10000
@@ -68,7 +76,6 @@ export function PortfolioCard() {
   const roiAbs        = totalValue - 10000
   const isPos         = roiPct >= 0
 
-  // Sparkline: historial simplificado basado en valor actual
   const sparkData = data
     ? [10000, ...Array.from({ length: 10 }, (_, i) => 10000 + (roiAbs * (i + 1) / 11)), totalValue]
     : [10000, 10000]
@@ -81,17 +88,12 @@ export function PortfolioCard() {
           {loading ? (
             <div className="mt-2 h-10 w-36 rounded-lg bg-primary-foreground/20 animate-pulse" />
           ) : (
-            <p className="mt-2 text-4xl font-semibold tracking-tight">
-              {formatEuro(totalValue)}
-            </p>
+            <p className="mt-2 text-4xl font-semibold tracking-tight">{formatEuro(totalValue)}</p>
           )}
           {!loading && (
             <div className="mt-3 flex items-center gap-2">
-              <span className={`inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2.5 py-1 text-xs font-semibold`}>
-                {isPos
-                  ? <ArrowUpRight className="size-3.5" />
-                  : <ArrowDownRight className="size-3.5" />
-                }
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2.5 py-1 text-xs font-semibold">
+                {isPos ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
                 {isPos ? '+' : ''}{roiPct.toFixed(2)}%
               </span>
               <span className="text-sm text-primary-foreground/70">
@@ -132,7 +134,6 @@ export function PortfolioCard() {
         </div>
       </div>
 
-      {/* Posiciones abiertas */}
       {!loading && data && data.positions.length > 0 && (
         <div className="mt-4 rounded-2xl bg-primary-foreground/10 p-4">
           <p className="text-xs font-medium text-primary-foreground/70 mb-3">Posiciones abiertas</p>
