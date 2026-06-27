@@ -92,7 +92,7 @@ export function PortfolioCard() {
         <div className="rounded-2xl bg-primary-foreground/10 p-4">
           <div className="flex items-center gap-2 text-primary-foreground/70">
             <Wallet className="size-4" />
-            <span className="text-xs font-medium">Buying Power</span>
+            <span className="text-xs font-medium">Cash Availabler</span>
           </div>
           <p className="mt-1.5 text-lg font-semibold">
             {formatEuro(portfolio.cash)}
