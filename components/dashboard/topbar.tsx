@@ -1,6 +1,7 @@
 'use client'
 import { Search, Bell, ChevronDown, X, Plus, Minus } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
+import { authClient } from '@/lib/auth-client'
 
 interface SearchResult {
   ticker: string
@@ -26,6 +27,10 @@ export function Topbar() {
   const [mode, setMode]                 = useState<'shares' | 'amount'>('shares')
   const [amount, setAmount]             = useState('')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const { data: session } = authClient.useSession()
+  const userName    = session?.user?.name ?? 'Trader'
+  const userInitial = userName.charAt(0).toUpperCase()
 
   useEffect(() => {
     if (query.length < 1) { setResults([]); return }
@@ -66,7 +71,7 @@ export function Topbar() {
     setAmount('')
   }
 
-  const totalByShares = selected ? shares * selected.price : 0
+  const totalByShares  = selected ? shares * selected.price : 0
   const sharesByAmount = selected && parseFloat(amount) > 0
     ? parseFloat(amount) / selected.price
     : 0
@@ -76,7 +81,7 @@ export function Topbar() {
       <div>
         <p className="text-sm text-muted-foreground">Welcome back, trader</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Good morning, Alex
+          Good morning, {userName}
         </h1>
       </div>
       <div className="flex items-center gap-3">
@@ -128,8 +133,10 @@ export function Topbar() {
 
         {/* Avatar */}
         <button className="flex items-center gap-2 rounded-xl border border-border bg-card py-1.5 pl-1.5 pr-3 transition-colors hover:bg-accent">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">A</span>
-          <span className="hidden text-sm font-medium text-foreground sm:block">Alex Rivera</span>
+          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+            {userInitial}
+          </span>
+          <span className="hidden text-sm font-medium text-foreground sm:block">{userName}</span>
           <ChevronDown className="size-4 text-muted-foreground" />
         </button>
       </div>
@@ -144,7 +151,6 @@ export function Topbar() {
               <p className="text-center text-sm text-muted-foreground">Cargando cotización...</p>
             ) : selected && (
               <>
-                {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-base font-bold text-primary">
@@ -160,7 +166,6 @@ export function Topbar() {
                   </button>
                 </div>
 
-                {/* Precio */}
                 <div className="mb-5">
                   <p className="text-3xl font-black text-foreground">
                     ${selected.price > 0 ? selected.price.toFixed(2) : '—'}
@@ -173,7 +178,6 @@ export function Topbar() {
                   </p>
                 </div>
 
-                {/* Panel de compra */}
                 {!showBuy ? (
                   <button
                     className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
@@ -182,39 +186,29 @@ export function Topbar() {
                   </button>
                 ) : (
                   <div className="flex flex-col gap-4">
-                    {/* Toggle modo */}
                     <div className="flex rounded-xl border border-border overflow-hidden">
-                      <button
-                        onClick={() => setMode('shares')}
+                      <button onClick={() => setMode('shares')}
                         className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'shares' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}>
                         Por acciones
                       </button>
-                      <button
-                        onClick={() => setMode('amount')}
+                      <button onClick={() => setMode('amount')}
                         className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'amount' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}>
                         Por importe
                       </button>
                     </div>
 
-                    {/* Input por acciones */}
                     {mode === 'shares' && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Número de acciones</p>
                         <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => setShares(s => Math.max(1, s - 1))}
+                          <button onClick={() => setShares(s => Math.max(1, s - 1))}
                             className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors">
                             <Minus className="size-4" />
                           </button>
-                          <input
-                            type="number"
-                            value={shares}
-                            min={1}
+                          <input type="number" value={shares} min={1}
                             onChange={e => setShares(Math.max(1, parseInt(e.target.value) || 1))}
-                            className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-center text-sm font-bold text-foreground outline-none focus:ring-2 focus:ring-ring/40"
-                          />
-                          <button
-                            onClick={() => setShares(s => s + 1)}
+                            className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-center text-sm font-bold text-foreground outline-none focus:ring-2 focus:ring-ring/40" />
+                          <button onClick={() => setShares(s => s + 1)}
                             className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors">
                             <Plus className="size-4" />
                           </button>
@@ -232,20 +226,14 @@ export function Topbar() {
                       </div>
                     )}
 
-                    {/* Input por importe */}
                     {mode === 'amount' && (
                       <div>
                         <p className="text-xs text-muted-foreground mb-2">Importe en euros</p>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">€</span>
-                          <input
-                            type="number"
-                            value={amount}
-                            min={0}
-                            placeholder="0.00"
+                          <input type="number" value={amount} min={0} placeholder="0.00"
                             onChange={e => setAmount(e.target.value)}
-                            className="w-full h-10 rounded-xl border border-border bg-background pl-7 pr-3 text-sm font-bold text-foreground outline-none focus:ring-2 focus:ring-ring/40"
-                          />
+                            className="w-full h-10 rounded-xl border border-border bg-background pl-7 pr-3 text-sm font-bold text-foreground outline-none focus:ring-2 focus:ring-ring/40" />
                         </div>
                         {parseFloat(amount) > 0 && selected.price > 0 && (
                           <div className="mt-3 rounded-xl bg-muted px-4 py-3">
@@ -262,10 +250,8 @@ export function Topbar() {
                       </div>
                     )}
 
-                    {/* Botones */}
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowBuy(false)}
+                      <button onClick={() => setShowBuy(false)}
                         className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent transition-colors">
                         Cancelar
                       </button>
