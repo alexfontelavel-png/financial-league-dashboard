@@ -63,13 +63,8 @@ function FeatureCarousel() {
             boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.04)',
             display: 'flex', flexDirection: 'column', gap: '16px',
           }}>
-            <div style={{
-              width: '56px', height: '56px', borderRadius: '14px',
-              background: '#f5f5f5',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0, overflow: 'hidden',
-            }}>
-              <img src={f.img} alt={f.title} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+           <div style={{ width: '64px', height: '64px', flexShrink: 0 }}>
+              <img src={f.img} alt={f.title} style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
             </div>
             <div>
               <p style={{ fontSize: '15px', fontWeight: 700, color: '#0a0a0a', marginBottom: '6px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{f.title}</p>
