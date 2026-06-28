@@ -1,3 +1,87 @@
+'use client'
+import { useEffect, useRef } from 'react'
+
+const features = [
+  { img: '/precios reales.png', title: 'Precios reales', desc: 'Datos de S&P500, NASDAQ y EUROSTOXX actualizados vía Polygon.io.' },
+  { img: '/ligas privadas.png', title: 'Ligas privadas', desc: 'Crea ligas con tus amigos, paga la entrada y compite por el bote.' },
+  { img: '/bitcoin.png', title: 'Crypto Boost', desc: 'Añade exposición a crypto para incrementar la volatilidad de tu portfolio.' },
+  { img: '/degen.png', title: 'Degen Trades', desc: 'Apalanca tus posiciones 2x o 3x si tienes convicción en un movimiento.' },
+  { img: '/gemini.png', title: 'AI Financial Agent', desc: 'Pregunta al agente qué acciones pueden subir y recibe análisis en tiempo real.' },
+  { img: '/dinero virtual.png', title: '€10.000 virtuales', desc: 'Empieza con €10.000 de capital virtual y construye el mejor portfolio.' },
+]
+
+function FeatureCarousel() {
+  const trackRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const track = trackRef.current
+    if (!track) return
+
+    let animId: number
+    let pos = 0
+    const speed = 0.5
+    const cardWidth = 300 + 16 // card width + gap
+    const totalWidth = cardWidth * features.length
+
+    function animate() {
+      pos += speed
+      if (pos >= totalWidth) pos = 0
+      if (track) track.style.transform = `translateX(-${pos}px)`
+      animId = requestAnimationFrame(animate)
+    }
+
+    animId = requestAnimationFrame(animate)
+
+    // Pausar al hover
+    const pause = () => cancelAnimationFrame(animId)
+    const resume = () => { animId = requestAnimationFrame(animate) }
+    track.addEventListener('mouseenter', pause)
+    track.addEventListener('mouseleave', resume)
+
+    return () => {
+      cancelAnimationFrame(animId)
+      track.removeEventListener('mouseenter', pause)
+      track.removeEventListener('mouseleave', resume)
+    }
+  }, [])
+
+  // Duplicar para loop infinito
+  const doubled = [...features, ...features]
+
+  return (
+    <div style={{ overflow: 'hidden', width: '100%', padding: '8px 0' }}>
+      <div ref={trackRef} style={{
+        display: 'flex', gap: '16px',
+        width: 'max-content',
+        willChange: 'transform',
+      }}>
+        {doubled.map((f, i) => (
+          <div key={i} style={{
+            width: '300px', flexShrink: 0,
+            background: '#ffffff', borderRadius: '20px', padding: '28px 24px',
+            border: '1px solid #ebebeb',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.04)',
+            display: 'flex', flexDirection: 'column', gap: '16px',
+          }}>
+            <div style={{
+              width: '56px', height: '56px', borderRadius: '14px',
+              background: '#f5f5f5',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, overflow: 'hidden',
+            }}>
+              <img src={f.img} alt={f.title} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+            </div>
+            <div>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: '#0a0a0a', marginBottom: '6px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{f.title}</p>
+              <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#ffffff', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -15,14 +99,12 @@ export default function LandingPage() {
           <a href="/login" style={{
             padding: '8px 18px', borderRadius: '100px',
             border: '1px solid #e0e0e0', background: 'transparent',
-            fontSize: '14px', fontWeight: 500, color: '#0a0a0a',
-            textDecoration: 'none',
+            fontSize: '14px', fontWeight: 500, color: '#0a0a0a', textDecoration: 'none',
           }}>Sign in</a>
           <a href="/register" style={{
             padding: '8px 18px', borderRadius: '100px',
             background: '#0a0a0a', border: '1px solid #0a0a0a',
-            fontSize: '14px', fontWeight: 600, color: '#ffffff',
-            textDecoration: 'none',
+            fontSize: '14px', fontWeight: 600, color: '#ffffff', textDecoration: 'none',
           }}>Sign up</a>
         </div>
       </nav>
@@ -42,7 +124,6 @@ export default function LandingPage() {
         }}>
           <img src="/amazon-3d.png" alt="" style={{ width: '100%', display: 'block' }} />
         </div>
-
         <div style={{
           position: 'absolute', top: '260px', right: '-40px',
           width: '320px', opacity: 1, transform: 'rotate(6deg)',
@@ -52,7 +133,6 @@ export default function LandingPage() {
         </div>
 
         <div style={{ position: 'relative', zIndex: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             background: 'rgba(245,245,245,0.9)', backdropFilter: 'blur(8px)',
@@ -75,8 +155,7 @@ export default function LandingPage() {
             <h1 style={{
               fontSize: 'clamp(36px, 5vw, 72px)',
               fontWeight: 900, color: '#0a0a0a',
-              lineHeight: 1.05, letterSpacing: '-0.04em',
-              margin: '0 0 16px',
+              lineHeight: 1.05, letterSpacing: '-0.04em', margin: '0 0 16px',
             }}>
               Descubre, elige y crea<br />
               <span style={{ color: '#ff6b35' }}>el mejor portfolio</span><br />
@@ -146,9 +225,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
-      <section style={{ padding: '100px 24px', background: '#ffffff', borderTop: '1px solid #f0f0f0' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+      {/* Features carrusel */}
+      <section style={{ padding: '100px 0', background: '#ffffff', borderTop: '1px solid #f0f0f0' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 24px' }}>
           <h2 style={{
             fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 900,
             color: '#0a0a0a', textAlign: 'center', letterSpacing: '-0.03em',
@@ -156,36 +235,20 @@ export default function LandingPage() {
           }}>
             Todo lo que necesitas<br />para competir
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-            {[
-              { img: '/precios reales.png', title: 'Precios reales', desc: 'Datos de S&P500, NASDAQ y EUROSTOXX actualizados vía Polygon.io.' },
-              { img: '/logo.png', title: 'Ligas privadas', desc: 'Crea ligas con tus amigos, paga la entrada y compite por el bote.' },
-              { img: '/bitcoin ogo.png', title: 'Crypto Boost', desc: 'Añade exposición a crypto para incrementar la volatilidad de tu portfolio.' },
-              { img: '/mcdonalds_empleado-removebg.png', title: 'Degen Trades', desc: 'Apalanca tus posiciones 2x o 3x si tienes convicción en un movimiento.' },
-              { img: '/geminii logo.png', title: 'AI Financial Agent', desc: 'Pregunta al agente qué acciones pueden subir y recibe análisis en tiempo real.' },
-              { img: '/virtual money.png', title: '€10.000 virtuales', desc: 'Empieza con €10.000 de capital virtual y construye el mejor portfolio.' },
-            ].map((f, i) => (
-              <div key={i} style={{
-                background: '#ffffff', borderRadius: '20px', padding: '32px 28px',
-                border: '1px solid #ebebeb',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.04)',
-                display: 'flex', flexDirection: 'column', gap: '16px',
-              }}>
-                <div style={{
-                  width: '56px', height: '56px', borderRadius: '14px',
-                  background: '#f5f5f5', border: '1px solid #ebebeb',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0, overflow: 'hidden',
-                }}>
-                  <img src={f.img} alt={f.title} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-                </div>
-                <div>
-                  <p style={{ fontSize: '16px', fontWeight: 700, color: '#0a0a0a', marginBottom: '8px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{f.title}</p>
-                  <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+        </div>
+        {/* Fade edges */}
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            position: 'absolute', left: 0, top: 0, bottom: 0, width: '120px', zIndex: 2,
+            background: 'linear-gradient(to right, #ffffff, transparent)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{
+            position: 'absolute', right: 0, top: 0, bottom: 0, width: '120px', zIndex: 2,
+            background: 'linear-gradient(to left, #ffffff, transparent)',
+            pointerEvents: 'none',
+          }} />
+          <FeatureCarousel />
         </div>
       </section>
 
