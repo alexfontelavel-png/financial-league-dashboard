@@ -18,8 +18,8 @@ export default function RegisterPage() {
     setError(''); setLoading(true)
     const { error: err } = await authClient.signUp.email({ email, password, name })
     if (err) { setError(err.message ?? 'Error al registrarse'); setLoading(false); return }
-    router.push('/')
-    router.refresh()
+    router.push('/dashboard')
+router.refresh()
   }
 
   return (
