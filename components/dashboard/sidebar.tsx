@@ -650,9 +650,8 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
                 borderRadius: '16px', padding: '18px 20px',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                  <img src="/gemini.png" alt="Gemini" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff', letterSpacing: '0.02em' }}>AI Insight</span>
-                  <span style={{ fontSize: '10px', color: '#888', marginLeft: '2px' }}>· powered by Gemini</span>
+                  <span style={{ fontSize: '16px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>AI Insight</span>
+                  <span style={{ fontSize: '12px', color: '#888' }}>· powered by Gemini</span>
                 </div>
                 <p style={{ fontSize: '13px', color: '#e5e7eb', lineHeight: 1.65, margin: 0 }}>
                   Tu cartera muestra una <strong style={{ color: '#ff6b35' }}>concentración elevada en tech</strong> con PLTR y AVGO representando el 17% del total. Con un 82% en cash, tienes amplio margen para diversificar. <strong style={{ color: '#fff' }}>PLTR</strong> mantiene momentum positivo ligado a contratos de defensa e IA gubernamental. Considera añadir exposición a sectores defensivos para reducir volatilidad antes del cierre de liga.
