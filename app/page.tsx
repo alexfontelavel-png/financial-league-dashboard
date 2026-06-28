@@ -10,9 +10,7 @@ export default function LandingPage() {
         background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)',
         borderBottom: '1px solid #f0f0f0',
       }}>
-        {/* Logo */}
         <img src="/logo.png" alt="Financial Fantasy League" style={{ height: '32px', display: 'block' }} />
-
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <a href="/login" style={{
             padding: '8px 18px', borderRadius: '100px',
@@ -32,39 +30,29 @@ export default function LandingPage() {
       {/* Hero */}
       <section style={{
         paddingTop: '120px', paddingBottom: '60px',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        minHeight: '720px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        textAlign: 'center', position: 'relative',
+        overflow: 'hidden', minHeight: '720px',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
       }}>
-        {/* Logo Amazon — izquierda */}
         <div style={{
           position: 'absolute', top: '50px', left: '-40px',
-          width: '360px', opacity: 1,
-          transform: 'rotate(-6deg)',
+          width: '360px', opacity: 1, transform: 'rotate(-6deg)',
           pointerEvents: 'none', zIndex: 0,
         }}>
           <img src="/amazon-3d.png" alt="" style={{ width: '100%', display: 'block' }} />
         </div>
 
-        {/* Logo Broadcom — derecha y más abajo */}
         <div style={{
           position: 'absolute', top: '260px', right: '-40px',
-          width: '320px', opacity: 1,
-          transform: 'rotate(6deg)',
+          width: '320px', opacity: 1, transform: 'rotate(6deg)',
           pointerEvents: 'none', zIndex: 0,
         }}>
           <img src="/broadcom-3d.png" alt="" style={{ width: '100%', display: 'block' }} />
         </div>
 
-        {/* Contenido centrado en primer plano */}
         <div style={{ position: 'relative', zIndex: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-          {/* Badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             background: 'rgba(245,245,245,0.9)', backdropFilter: 'blur(8px)',
@@ -76,13 +64,10 @@ export default function LandingPage() {
             Real stock prices · Powered by Polygon.io
           </div>
 
-          {/* Pastilla */}
           <div style={{
             background: 'rgba(255,255,255,0.65)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            borderRadius: '32px', padding: '44px 56px 40px',
-            margin: '0 24px',
+            backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+            borderRadius: '32px', padding: '44px 56px 40px', margin: '0 24px',
             boxShadow: '0 8px 40px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
             border: '1px solid rgba(255,255,255,0.7)',
             maxWidth: '780px', width: '100%',
@@ -97,15 +82,11 @@ export default function LandingPage() {
               <span style={{ color: '#ff6b35' }}>el mejor portfolio</span><br />
               entre tus competidores.
             </h1>
-            <p style={{
-              fontSize: '17px', color: '#666',
-              maxWidth: '400px', margin: '0 auto', lineHeight: 1.65,
-            }}>
+            <p style={{ fontSize: '17px', color: '#666', maxWidth: '400px', margin: '0 auto', lineHeight: 1.65 }}>
               Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
             </p>
           </div>
 
-          {/* CTAs */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             gap: '12px', flexWrap: 'wrap', padding: '0 24px',
@@ -121,20 +102,15 @@ export default function LandingPage() {
             <a href="/login" style={{
               display: 'inline-flex', alignItems: 'center',
               padding: '14px 28px', borderRadius: '100px',
-              border: '1px solid #e0e0e0',
-              background: 'rgba(255,255,255,0.95)',
+              border: '1px solid #e0e0e0', background: 'rgba(255,255,255,0.95)',
               color: '#0a0a0a', fontSize: '15px', fontWeight: 600,
-              textDecoration: 'none',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+              textDecoration: 'none', boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
             }}>Iniciar sesión</a>
           </div>
 
-          {/* Screenshot cards */}
           <div style={{
-            maxWidth: '1100px', margin: '0 auto',
-            padding: '0 24px',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            maxWidth: '1100px', margin: '0 auto', padding: '0 24px',
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '20px', alignItems: 'start', width: '100%',
           }}>
             {[
@@ -159,11 +135,8 @@ export default function LandingPage() {
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }} />
                     <div style={{ flex: 1, margin: '0 8px', background: '#ebebeb', borderRadius: '4px', height: '16px' }} />
                   </div>
-                  <img
-                    src={item.img}
-                    alt={item.label}
-                    style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top', maxHeight: '320px' }}
-                  />
+                  <img src={item.img} alt={item.label}
+                    style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top', maxHeight: '320px' }} />
                 </div>
                 <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', marginBottom: '4px', textAlign: 'left' }}>{item.label}</p>
                 <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.5, textAlign: 'left' }}>{item.desc}</p>
@@ -185,12 +158,12 @@ export default function LandingPage() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
             {[
-              { title: 'Precios reales', desc: 'Datos de S&P500, NASDAQ y EUROSTOXX actualizados vía Polygon.io.' },
-              { title: 'Ligas privadas', desc: 'Crea ligas con tus amigos, paga la entrada y compite por el bote.' },
-              { title: 'Crypto Boost', desc: 'Añade exposición a crypto para incrementar la volatilidad de tu portfolio.' },
-              { title: 'Degen Trades', desc: 'Apalanca tus posiciones 2x o 3x si tienes convicción en un movimiento.' },
-              { title: 'AI Financial Agent', desc: 'Pregunta al agente qué acciones pueden subir y recibe análisis en tiempo real.' },
-              { title: '€10.000 virtuales', desc: 'Empieza con €10.000 de capital virtual y construye el mejor portfolio.' },
+              { img: '/precios reales.png', title: 'Precios reales', desc: 'Datos de S&P500, NASDAQ y EUROSTOXX actualizados vía Polygon.io.' },
+              { img: '/logo.png', title: 'Ligas privadas', desc: 'Crea ligas con tus amigos, paga la entrada y compite por el bote.' },
+              { img: '/bitcoin ogo.png', title: 'Crypto Boost', desc: 'Añade exposición a crypto para incrementar la volatilidad de tu portfolio.' },
+              { img: '/mcdonalds_empleado-removebg.png', title: 'Degen Trades', desc: 'Apalanca tus posiciones 2x o 3x si tienes convicción en un movimiento.' },
+              { img: '/geminii logo.png', title: 'AI Financial Agent', desc: 'Pregunta al agente qué acciones pueden subir y recibe análisis en tiempo real.' },
+              { img: '/virtual money.png', title: '€10.000 virtuales', desc: 'Empieza con €10.000 de capital virtual y construye el mejor portfolio.' },
             ].map((f, i) => (
               <div key={i} style={{
                 background: '#ffffff', borderRadius: '20px', padding: '32px 28px',
@@ -202,12 +175,9 @@ export default function LandingPage() {
                   width: '56px', height: '56px', borderRadius: '14px',
                   background: '#f5f5f5', border: '1px solid #ebebeb',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0,
+                  flexShrink: 0, overflow: 'hidden',
                 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="3"/>
-                    <path d="M3 9h18M9 21V9"/>
-                  </svg>
+                  <img src={f.img} alt={f.title} style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
                 </div>
                 <div>
                   <p style={{ fontSize: '16px', fontWeight: 700, color: '#0a0a0a', marginBottom: '8px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{f.title}</p>
