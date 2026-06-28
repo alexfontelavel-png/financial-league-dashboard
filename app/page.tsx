@@ -10,20 +10,9 @@ export default function LandingPage() {
         background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)',
         borderBottom: '1px solid #f0f0f0',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '32px', height: '32px', background: '#111', borderRadius: '8px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-              <polyline points="16 7 22 7 22 13"/>
-            </svg>
-          </div>
-          <span style={{ fontSize: '15px', fontWeight: 700, color: '#0a0a0a', letterSpacing: '-0.01em' }}>
-            Financial Fantasy League
-          </span>
-        </div>
+        {/* Logo */}
+        <img src="/logo.png" alt="Financial Fantasy League" style={{ height: '32px', display: 'block' }} />
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <a href="/login" style={{
             padding: '8px 18px', borderRadius: '100px',
@@ -209,7 +198,6 @@ export default function LandingPage() {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.04)',
                 display: 'flex', flexDirection: 'column', gap: '16px',
               }}>
-                {/* Placeholder imagen */}
                 <div style={{
                   width: '56px', height: '56px', borderRadius: '14px',
                   background: '#f5f5f5', border: '1px solid #ebebeb',
