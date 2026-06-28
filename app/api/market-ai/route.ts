@@ -39,10 +39,11 @@ Pregunta del usuario: ${question}`,
 
     const data = await res.json()
 
-    // Devolver todo para debug
-    if (!res.ok) {
-      return NextResponse.json({ error: 'Gemini error', status: res.status, data }, { status: 500 })
-    }
+    return NextResponse.json({ 
+  ok: res.ok, 
+  status: res.status, 
+  data: data 
+})
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text
     if (!text) {
