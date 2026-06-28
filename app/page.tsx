@@ -46,34 +46,34 @@ export default function LandingPage() {
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden',
-        minHeight: '680px',
+        minHeight: '720px',
       }}>
-        {/* Logo Amazon — izquierda, grande y visible */}
+        {/* Logo Amazon — izquierda */}
         <div style={{
           position: 'absolute',
-          top: '40px',
-          left: '-60px',
-          width: '380px',
-          opacity: 0.55,
-          transform: 'rotate(-8deg) scale(1)',
+          top: '50px',
+          left: '-40px',
+          width: '360px',
+          opacity: 1,
+          transform: 'rotate(-6deg)',
           pointerEvents: 'none',
           zIndex: 0,
         }}>
-          <img src="/amazon-3d.png" alt="" style={{ width: '100%' }} />
+          <img src="/amazon-3d.png" alt="" style={{ width: '100%', display: 'block' }} />
         </div>
 
-        {/* Logo Broadcom — derecha, grande y visible */}
+        {/* Logo Broadcom — derecha y más abajo */}
         <div style={{
           position: 'absolute',
-          top: '80px',
-          right: '-60px',
-          width: '340px',
-          opacity: 0.5,
-          transform: 'rotate(8deg) scale(1)',
+          top: '260px',
+          right: '-40px',
+          width: '320px',
+          opacity: 1,
+          transform: 'rotate(6deg)',
           pointerEvents: 'none',
           zIndex: 0,
         }}>
-          <img src="/broadcom-3d.png" alt="" style={{ width: '100%' }} />
+          <img src="/broadcom-3d.png" alt="" style={{ width: '100%', display: 'block' }} />
         </div>
 
         {/* Contenido en primer plano */}
@@ -90,27 +90,44 @@ export default function LandingPage() {
             Real stock prices · Powered by Polygon.io
           </div>
 
-          {/* Título con sombra para dar profundidad */}
+          {/* Título flotante con profundidad */}
           <h1 style={{
             fontSize: 'clamp(38px, 5.5vw, 76px)',
             fontWeight: 900, color: '#0a0a0a',
             lineHeight: 1.05, letterSpacing: '-0.04em',
             margin: '0 auto 24px', maxWidth: '820px', padding: '0 24px',
-            textShadow: '0 2px 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,1), 0 4px 24px rgba(255,255,255,0.8)',
+            textShadow: `
+              0 1px 0 rgba(255,255,255,1),
+              0 2px 0 rgba(255,255,255,0.9),
+              0 4px 8px rgba(255,255,255,1),
+              0 8px 24px rgba(255,255,255,0.95),
+              0 16px 48px rgba(255,255,255,0.8),
+              2px 2px 0 rgba(255,255,255,0.6),
+              -2px -2px 0 rgba(255,255,255,0.6)
+            `,
+            filter: 'drop-shadow(0 4px 32px rgba(255,255,255,1)) drop-shadow(0 0 60px rgba(255,255,255,0.95))',
           }}>
             Research, choose and<br />
             <span style={{
               color: '#ff6b35',
-              textShadow: '0 2px 40px rgba(255,255,255,0.95), 0 0 60px rgba(255,255,255,1)',
+              textShadow: `
+                0 1px 0 rgba(255,255,255,1),
+                0 2px 0 rgba(255,255,255,0.9),
+                0 4px 8px rgba(255,255,255,1),
+                0 8px 24px rgba(255,255,255,0.95),
+                0 16px 48px rgba(255,255,255,0.8)
+              `,
+              filter: 'drop-shadow(0 4px 32px rgba(255,255,255,1))',
             }}>create the best portfolio</span><br />
             among your peers.
           </h1>
 
           {/* Subtítulo */}
           <p style={{
-            fontSize: '18px', color: '#666',
+            fontSize: '18px', color: '#555',
             maxWidth: '460px', margin: '0 auto 40px',
             lineHeight: 1.65, padding: '0 24px',
+            textShadow: '0 2px 16px rgba(255,255,255,1), 0 0 32px rgba(255,255,255,1)',
           }}>
             Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
           </p>
@@ -125,14 +142,16 @@ export default function LandingPage() {
               padding: '14px 28px', borderRadius: '100px',
               background: '#0a0a0a', color: '#fff',
               fontSize: '15px', fontWeight: 700, textDecoration: 'none',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.12)',
             }}>Empieza gratis →</a>
             <a href="/login" style={{
               display: 'inline-flex', alignItems: 'center',
               padding: '14px 28px', borderRadius: '100px',
-              border: '1px solid #e0e0e0', background: 'rgba(255,255,255,0.9)',
+              border: '1px solid #e0e0e0',
+              background: 'rgba(255,255,255,0.95)',
               color: '#0a0a0a', fontSize: '15px', fontWeight: 600,
               textDecoration: 'none',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
               backdropFilter: 'blur(8px)',
             }}>Iniciar sesión</a>
           </div>
@@ -147,27 +166,9 @@ export default function LandingPage() {
             alignItems: 'start',
           }}>
             {[
-              {
-                img: '/screen1.png',
-                label: 'Tu portfolio en tiempo real',
-                desc: 'Consulta tu valor total, cash disponible y posiciones abiertas.',
-                offset: '0px',
-                accent: '#f0fdf4',
-              },
-              {
-                img: '/screen2.png',
-                label: 'Crypto Boost & features premium',
-                desc: 'Añade exposición a crypto y apalanca tus mejores trades.',
-                offset: '32px',
-                accent: '#fff8f5',
-              },
-              {
-                img: '/screen3.png',
-                label: 'Markets en tiempo real',
-                desc: 'Daily gainers y losers con precios reales del mercado.',
-                offset: '16px',
-                accent: '#f5f5ff',
-              },
+              { img: '/screen1.png', label: 'Tu portfolio en tiempo real', desc: 'Consulta tu valor total, cash disponible y posiciones abiertas.', offset: '0px', accent: '#f0fdf4' },
+              { img: '/screen2.png', label: 'Crypto Boost & features premium', desc: 'Añade exposición a crypto y apalanca tus mejores trades.', offset: '32px', accent: '#fff8f5' },
+              { img: '/screen3.png', label: 'Markets en tiempo real', desc: 'Daily gainers y losers con precios reales del mercado.', offset: '16px', accent: '#f5f5ff' },
             ].map((item, i) => (
               <div key={i} style={{ marginTop: item.offset }}>
                 <div style={{
@@ -192,12 +193,8 @@ export default function LandingPage() {
                     style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top', maxHeight: '320px' }}
                   />
                 </div>
-                <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', marginBottom: '4px', textAlign: 'left' }}>
-                  {item.label}
-                </p>
-                <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.5, textAlign: 'left' }}>
-                  {item.desc}
-                </p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', marginBottom: '4px', textAlign: 'left' }}>{item.label}</p>
+                <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.5, textAlign: 'left' }}>{item.desc}</p>
               </div>
             ))}
           </div>
