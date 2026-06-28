@@ -44,37 +44,71 @@ export default function LandingPage() {
       <section style={{
         paddingTop: '140px', paddingBottom: '60px',
         textAlign: 'center', overflow: 'hidden',
+        position: 'relative',
       }}>
+        {/* Logo Amazon — esquina superior izquierda */}
+        <div style={{
+          position: 'absolute', top: '60px', left: '-20px',
+          width: '320px', opacity: 0.18,
+          transform: 'rotate(-12deg)',
+          pointerEvents: 'none', userSelect: 'none',
+          filter: 'blur(0.5px)',
+        }}>
+          <img src="/amazon-3d.png" alt="" style={{ width: '100%' }} />
+        </div>
+
+        {/* Logo Broadcom — esquina inferior derecha */}
+        <div style={{
+          position: 'absolute', bottom: '20px', right: '-30px',
+          width: '280px', opacity: 0.15,
+          transform: 'rotate(10deg)',
+          pointerEvents: 'none', userSelect: 'none',
+          filter: 'blur(0.5px)',
+        }}>
+          <img src="/broadcom-3d.png" alt="" style={{ width: '100%' }} />
+        </div>
+
+        {/* Badge */}
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: '6px',
           background: '#f5f5f5', borderRadius: '100px',
           padding: '6px 14px', marginBottom: '28px',
           fontSize: '12px', fontWeight: 600, color: '#555',
+          position: 'relative', zIndex: 1,
         }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6b35', display: 'inline-block' }} />
           Real stock prices · Powered by Polygon.io
         </div>
 
+        {/* Título */}
         <h1 style={{
           fontSize: 'clamp(38px, 5.5vw, 76px)',
           fontWeight: 900, color: '#0a0a0a',
           lineHeight: 1.05, letterSpacing: '-0.04em',
           margin: '0 auto 24px', maxWidth: '820px', padding: '0 24px',
+          position: 'relative', zIndex: 1,
         }}>
           Research, choose and<br />
           <span style={{ color: '#ff6b35' }}>create the best portfolio</span><br />
           among your peers.
         </h1>
 
+        {/* Subtítulo */}
         <p style={{
           fontSize: '18px', color: '#666',
           maxWidth: '460px', margin: '0 auto 40px',
           lineHeight: 1.65, padding: '0 24px',
+          position: 'relative', zIndex: 1,
         }}>
           Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
         </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', padding: '0 24px', marginBottom: '80px' }}>
+        {/* CTAs */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: '12px', flexWrap: 'wrap', padding: '0 24px', marginBottom: '80px',
+          position: 'relative', zIndex: 1,
+        }}>
           <a href="/register" style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             padding: '14px 28px', borderRadius: '100px',
@@ -98,6 +132,7 @@ export default function LandingPage() {
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '20px',
           alignItems: 'start',
+          position: 'relative', zIndex: 1,
         }}>
           {[
             {
@@ -124,17 +159,13 @@ export default function LandingPage() {
           ].map((item, i) => (
             <div key={i} style={{ marginTop: item.offset }}>
               <div style={{
-                borderRadius: '20px',
-                overflow: 'hidden',
+                borderRadius: '20px', overflow: 'hidden',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
                 border: '1px solid rgba(0,0,0,0.06)',
-                background: item.accent,
-                marginBottom: '16px',
+                background: item.accent, marginBottom: '16px',
               }}>
-                {/* Barra navegador */}
                 <div style={{
-                  padding: '10px 14px',
-                  background: '#f8f8f8',
+                  padding: '10px 14px', background: '#f8f8f8',
                   borderBottom: '1px solid #ebebeb',
                   display: 'flex', alignItems: 'center', gap: '6px',
                 }}>
@@ -146,11 +177,7 @@ export default function LandingPage() {
                 <img
                   src={item.img}
                   alt={item.label}
-                  style={{
-                    width: '100%', display: 'block',
-                    objectFit: 'cover', objectPosition: 'top',
-                    maxHeight: '320px',
-                  }}
+                  style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top', maxHeight: '320px' }}
                 />
               </div>
               <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', marginBottom: '4px', textAlign: 'left' }}>
