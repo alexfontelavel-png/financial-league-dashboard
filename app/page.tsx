@@ -101,21 +101,21 @@ export default function LandingPage() {
         }}>
           {[
             {
-              img: '/screenshots/screen1.png',
+              img: '/screen1.png',
               label: 'Tu portfolio en tiempo real',
               desc: 'Consulta tu valor total, cash disponible y posiciones abiertas.',
               offset: '0px',
               accent: '#f0fdf4',
             },
             {
-              img: '/screenshots/screen2.png',
+              img: '/screen2.png',
               label: 'Crypto Boost & features premium',
               desc: 'Añade exposición a crypto y apalanca tus mejores trades.',
               offset: '32px',
               accent: '#fff8f5',
             },
             {
-              img: '/screenshots/screen3.png',
+              img: '/screen3.png',
               label: 'Markets en tiempo real',
               desc: 'Daily gainers y losers con precios reales del mercado.',
               offset: '16px',
@@ -123,7 +123,6 @@ export default function LandingPage() {
             },
           ].map((item, i) => (
             <div key={i} style={{ marginTop: item.offset }}>
-              {/* Card imagen */}
               <div style={{
                 borderRadius: '20px',
                 overflow: 'hidden',
@@ -131,9 +130,8 @@ export default function LandingPage() {
                 border: '1px solid rgba(0,0,0,0.06)',
                 background: item.accent,
                 marginBottom: '16px',
-                position: 'relative',
               }}>
-                {/* Barra de navegador simulada */}
+                {/* Barra navegador */}
                 <div style={{
                   padding: '10px 14px',
                   background: '#f8f8f8',
@@ -143,25 +141,18 @@ export default function LandingPage() {
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }} />
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }} />
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }} />
-                  <div style={{
-                    flex: 1, margin: '0 8px',
-                    background: '#ebebeb', borderRadius: '4px',
-                    height: '16px',
-                  }} />
+                  <div style={{ flex: 1, margin: '0 8px', background: '#ebebeb', borderRadius: '4px', height: '16px' }} />
                 </div>
                 <img
                   src={item.img}
                   alt={item.label}
                   style={{
-                    width: '100%',
-                    display: 'block',
-                    objectFit: 'cover',
-                    objectPosition: 'top',
+                    width: '100%', display: 'block',
+                    objectFit: 'cover', objectPosition: 'top',
                     maxHeight: '320px',
                   }}
                 />
               </div>
-              {/* Texto debajo */}
               <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', marginBottom: '4px', textAlign: 'left' }}>
                 {item.label}
               </p>
