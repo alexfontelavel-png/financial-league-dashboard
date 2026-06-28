@@ -1,22 +1,8 @@
 'use client'
 import {
-  LayoutGrid,
-  TrendingUp,
-  Trophy,
-  Wallet,
-  Users,
-  Settings,
-  LifeBuoy,
-  CandlestickChart,
-  Check,
-  X,
-  TrendingDown,
-  Send,
-  Zap,
-  Flame,
-  Search,
-  Plus,
-  Minus,
+  LayoutGrid, TrendingUp, Trophy, Wallet, Users,
+  Settings, LifeBuoy, CandlestickChart, Check, X,
+  TrendingDown, Send, Zap, Flame, Search, Plus, Minus,
 } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
@@ -253,11 +239,7 @@ function CryptoBoostPanel({ onClose }: { onClose: () => void }) {
 
 interface SearchResult { ticker: string; name: string; exchange: string }
 
-function DegenTradeOrder({ leverage, onBack, onClose }: {
-  leverage: 2 | 3
-  onBack: () => void
-  onClose: () => void
-}) {
+function DegenTradeOrder({ leverage, onBack, onClose }: { leverage: 2 | 3; onBack: () => void; onClose: () => void }) {
   const [ticker, setTicker]               = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [searching, setSearching]         = useState(false)
@@ -268,7 +250,6 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
   const [amount, setAmount]               = useState('')
   const [confirmed, setConfirmed]         = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
   const price = quotePrice ?? 0
 
   useEffect(() => {
@@ -285,9 +266,7 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
   }, [ticker])
 
   async function selectTicker(r: SearchResult) {
-    setTicker(r.ticker)
-    setSearchResults([])
-    setQuoteLoading(true)
+    setTicker(r.ticker); setSearchResults([]); setQuoteLoading(true)
     try {
       const res = await fetch(`/api/quote?ticker=${r.ticker}`)
       if (res.ok) { const d = await res.json(); setQuotePrice(d.price) }
@@ -303,17 +282,10 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
   if (confirmed) {
     return (
       <div className="flex flex-col items-center gap-4 py-6 text-center">
-        <div className="flex size-16 items-center justify-center rounded-full bg-red-100">
-          <Flame className="size-8 text-red-500" />
-        </div>
+        <div className="flex size-16 items-center justify-center rounded-full bg-red-100"><Flame className="size-8 text-red-500" /></div>
         <h3 className="text-lg font-bold text-foreground">¡Degen Trade activado!</h3>
-        <p className="text-sm text-muted-foreground">
-          Tu trade {leverage}x en <strong>{ticker}</strong> ha sido registrado.<br />
-          Exposición real: <strong>${(mode === 'shares' ? exposureShares : exposureAmount).toFixed(2)}</strong>
-        </p>
-        <button onClick={onClose} className="w-full rounded-xl bg-red-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
-          Cerrar
-        </button>
+        <p className="text-sm text-muted-foreground">Tu trade {leverage}x en <strong>{ticker}</strong> ha sido registrado.<br />Exposición real: <strong>${(mode === 'shares' ? exposureShares : exposureAmount).toFixed(2)}</strong></p>
+        <button onClick={onClose} className="w-full rounded-xl bg-red-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity">Cerrar</button>
       </div>
     )
   }
@@ -328,7 +300,7 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
         </div>
       </div>
       <div className="relative">
-        <div className="flex items-center gap-2 bg-background rounded-xl border border-border px-3 py-2.5 focus-within:border-red-400 transition-colors">
+        <div className="flex items-center gap-2 bg-background rounded-xl border border-border px-3 py-2.5">
           <Search className="size-4 text-muted-foreground shrink-0" />
           <input value={ticker} onChange={e => { setTicker(e.target.value.toUpperCase()); setQuotePrice(null) }}
             placeholder="Buscar acción... AAPL, TSLA, NVDA"
@@ -353,22 +325,15 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
         )}
       </div>
       <div className="flex rounded-xl border border-border overflow-hidden">
-        <button onClick={() => setMode('shares')}
-          className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'shares' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-accent'}`}>
-          Por acciones
-        </button>
-        <button onClick={() => setMode('amount')}
-          className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'amount' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-accent'}`}>
-          Por importe
-        </button>
+        <button onClick={() => setMode('shares')} className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'shares' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-accent'}`}>Por acciones</button>
+        <button onClick={() => setMode('amount')} className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'amount' ? 'bg-red-500 text-white' : 'text-muted-foreground hover:bg-accent'}`}>Por importe</button>
       </div>
       {mode === 'shares' && (
         <div>
           <p className="text-xs text-muted-foreground mb-2">Número de acciones</p>
           <div className="flex items-center gap-3">
             <button onClick={() => setShares(s => Math.max(1, s - 1))} className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors"><Minus className="size-4" /></button>
-            <input type="number" value={shares} min={1} onChange={e => setShares(Math.max(1, parseInt(e.target.value) || 1))}
-              className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-center text-sm font-bold text-foreground outline-none" />
+            <input type="number" value={shares} min={1} onChange={e => setShares(Math.max(1, parseInt(e.target.value) || 1))} className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-center text-sm font-bold text-foreground outline-none" />
             <button onClick={() => setShares(s => s + 1)} className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors"><Plus className="size-4" /></button>
           </div>
           {price > 0 && (
@@ -384,8 +349,7 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
           <p className="text-xs text-muted-foreground mb-2">Importe en euros</p>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">€</span>
-            <input type="number" value={amount} min={0} placeholder="0.00" onChange={e => setAmount(e.target.value)}
-              className="w-full h-10 rounded-xl border border-border bg-background pl-7 pr-3 text-sm font-bold text-foreground outline-none" />
+            <input type="number" value={amount} min={0} placeholder="0.00" onChange={e => setAmount(e.target.value)} className="w-full h-10 rounded-xl border border-border bg-background pl-7 pr-3 text-sm font-bold text-foreground outline-none" />
           </div>
           {parseFloat(amount) > 0 && price > 0 && (
             <div className="mt-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 flex flex-col gap-1">
@@ -407,11 +371,7 @@ function DegenTradeOrder({ leverage, onBack, onClose }: {
 
 function DegenTradePanel({ onClose }: { onClose: () => void }) {
   const [selectedLeverage, setSelectedLeverage] = useState<2 | 3 | null>(null)
-  const features = [
-    '¿Has escuchado sobre los degen trades?',
-    'Si tienes convicción con un movimiento, ves a por todas',
-    'Apalanca un trade y multiplica tus resultados',
-  ]
+  const features = ['¿Has escuchado sobre los degen trades?', 'Si tienes convicción con un movimiento, ves a por todas', 'Apalanca un trade y multiplica tus resultados']
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
@@ -452,11 +412,11 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
             </div>
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
               <p className="text-sm font-bold text-red-700 mb-3">⚠️ ¿Qué implica el Apalancamiento 2x?</p>
-              <p className="text-xs text-red-600 mb-3 leading-relaxed">Al activar este boost, tanto tus ganancias como tus pérdidas se multiplicarán por dos. Ejemplo si inviertes 100€ en Amazon (Posición real en mercado: 200€):</p>
+              <p className="text-xs text-red-600 mb-3 leading-relaxed">Al activar este boost, tanto tus ganancias como tus pérdidas se multiplicarán por dos.</p>
               <ul className="flex flex-col gap-2">
-                <li className="flex items-start gap-2 text-xs text-red-600"><span>🚀</span><span><strong>Si Amazon sube un 10%:</strong> Tú ganas un 20% (tu saldo sube a 120€).</span></li>
-                <li className="flex items-start gap-2 text-xs text-red-600"><span>📉</span><span><strong>Si Amazon baja un 10%:</strong> Tú pierdes un 20% (tu saldo baja a 80€).</span></li>
-                <li className="flex items-start gap-2 text-xs text-red-600"><span>💥</span><span><strong>Si Amazon baja un 50%:</strong> Tu posición se liquida automáticamente para devolver el préstamo y te quedas con 0€.</span></li>
+                <li className="flex items-start gap-2 text-xs text-red-600"><span>🚀</span><span><strong>Si Amazon sube un 10%:</strong> Tú ganas un 20%.</span></li>
+                <li className="flex items-start gap-2 text-xs text-red-600"><span>📉</span><span><strong>Si Amazon baja un 10%:</strong> Tú pierdes un 20%.</span></li>
+                <li className="flex items-start gap-2 text-xs text-red-600"><span>💥</span><span><strong>Si Amazon baja un 50%:</strong> Tu posición se liquida automáticamente.</span></li>
               </ul>
             </div>
           </>
@@ -496,9 +456,70 @@ interface PortfolioData {
   transactions: PortfolioTransaction[]
 }
 
+// Mini sparkline SVG
+function Sparkline({ values, color }: { values: number[]; color: string }) {
+  if (values.length < 2) return null
+  const w = 120; const h = 40
+  const min = Math.min(...values); const max = Math.max(...values)
+  const range = max - min || 1
+  const step = w / (values.length - 1)
+  const pts = values.map((v, i) => `${i * step},${h - ((v - min) / range) * (h - 6) - 3}`)
+  const d = `M ${pts.join(' L ')}`
+  const area = `${d} L ${w} ${h} L 0 ${h} Z`
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`sg-${color}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#sg-${color})`} />
+      <path d={d} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+// Gráfico de portfolio simulado
+function PortfolioChart({ totalValue }: { totalValue: number }) {
+  const base = 10000
+  const simPoints = [base, 9980, 10020, 9950, 10080, 10150, 10060, 10200, 10180, totalValue]
+  const w = 500; const h = 100
+  const min = Math.min(...simPoints) - 50
+  const max = Math.max(...simPoints) + 50
+  const range = max - min
+  const step = w / (simPoints.length - 1)
+  const pts = simPoints.map((v, i) => `${i * step},${h - ((v - min) / range) * (h - 10) - 5}`)
+  const d = `M ${pts.join(' L ')}`
+  const area = `${d} L ${w} ${h} L 0 ${h} Z`
+  const isPos = totalValue >= base
+  const color = isPos ? '#16a34a' : '#ef4444'
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ height: '80px' }}>
+        <defs>
+          <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.15" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#chartFill)" />
+        <path d={d} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+        {['Jun 1', 'Jun 8', 'Jun 15', 'Jun 22', 'Hoy'].map(l => (
+          <span key={l} style={{ fontSize: '10px', color: '#aaa' }}>{l}</span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function PortfolioPanel({ onClose }: { onClose: () => void }) {
   const [data, setData]       = useState<PortfolioData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [tab, setTab]         = useState<'overview' | 'holdings' | 'history'>('overview')
 
   useEffect(() => {
     fetch('/api/portfolio')
@@ -508,124 +529,215 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
   }, [])
 
   const fmt   = (n: number) => n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
-  const total = data?.total_value ?? 0
+  const total = data?.total_value ?? 10000
+  const isPos = (data?.roi_pct ?? 0) >= 0
+
+  // Sparklines simuladas por posición
+  const sparkData: Record<string, number[]> = {
+    PLTR: [105, 108, 112, 109, 113, 112, 113],
+    AVGO: [358, 362, 360, 365, 363, 366, 365],
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
-
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-foreground">Mi Portfolio</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">Resumen de tu cartera en tiempo real</p>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          width: '100%', maxWidth: '680px', maxHeight: '90vh',
+          overflowY: 'auto', borderRadius: '24px',
+          background: '#ffffff', boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
+          margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
+        }}
+      >
+        {/* Header */}
+        <div style={{ padding: '24px 28px 0', borderBottom: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div>
+              <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.02em', margin: 0 }}>Mi Portfolio</h2>
+              <p style={{ fontSize: '13px', color: '#888', margin: '2px 0 0' }}>Resumen de tu cartera · Liga 2026</p>
+            </div>
+            <button onClick={onClose} style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X size={16} color="#666" />
+            </button>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+
+          {/* Tabs */}
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {(['overview', 'holdings', 'history'] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                padding: '8px 16px', borderRadius: '8px 8px 0 0', border: 'none', cursor: 'pointer',
+                fontSize: '13px', fontWeight: tab === t ? 700 : 500,
+                background: tab === t ? '#0a0a0a' : 'transparent',
+                color: tab === t ? '#fff' : '#888',
+                transition: 'all 0.15s',
+              }}>
+                {t === 'overview' ? 'Resumen' : t === 'holdings' ? 'Posiciones' : 'Historial'}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {loading && (
-          <div className="flex flex-col gap-3">
-            {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
-          </div>
-        )}
+        <div style={{ padding: '24px 28px' }}>
+          {loading && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[1,2,3].map(i => <div key={i} style={{ height: '64px', borderRadius: '12px', background: '#f5f5f5', animation: 'pulse 1.5s infinite' }} />)}
+            </div>
+          )}
 
-        {!loading && data && (
-          <>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              {[
-                ['Valor total', fmt(data.total_value), ''],
-                ['Invertido', fmt(data.invested_value), ''],
-                ['Cash', fmt(data.cash_balance), 'text-green-600'],
-              ].map(([l, v, c]) => (
-                <div key={l} className="rounded-xl border border-border bg-background p-4 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">{l}</p>
-                  <p className={`text-base font-bold ${c || 'text-foreground'}`}>{v}</p>
+          {!loading && data && tab === 'overview' && (
+            <>
+              {/* Valor total + gráfico */}
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '12px', fontWeight: 600, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Valor total</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '36px', fontWeight: 900, color: '#0a0a0a', letterSpacing: '-0.03em', lineHeight: 1 }}>{fmt(total)}</span>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: isPos ? '#16a34a' : '#ef4444', background: isPos ? '#f0fdf4' : '#fef2f2', padding: '2px 8px', borderRadius: '100px' }}>
+                    {isPos ? '+' : ''}{data.roi_pct.toFixed(2)}%
+                  </span>
                 </div>
-              ))}
-            </div>
-
-            <div className={`rounded-xl px-4 py-3 mb-5 flex items-center justify-between ${data.roi_pct >= 0 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-              <p className="text-sm font-medium text-foreground">Rentabilidad total</p>
-              <p className={`text-lg font-black ${data.roi_pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {data.roi_pct >= 0 ? '+' : ''}{data.roi_pct.toFixed(2)}%
-              </p>
-            </div>
-
-            <h3 className="text-sm font-semibold text-foreground mb-3">Posiciones abiertas</h3>
-            {data.positions.length === 0 ? (
-              <div className="rounded-xl border border-border bg-background p-8 text-center mb-5">
-                <p className="text-sm text-muted-foreground">Sin posiciones. Compra tu primera acción desde el Trade Panel.</p>
+                <p style={{ fontSize: '12px', color: '#aaa', marginBottom: '16px' }}>desde el inicio de temporada</p>
+                <PortfolioChart totalValue={total} />
               </div>
-            ) : (
-              <div className="flex flex-col gap-2 mb-5">
-                {data.positions.map(pos => {
+
+              {/* KPIs */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
+                {[
+                  { label: 'Invertido', value: fmt(data.invested_value), color: '#0a0a0a' },
+                  { label: 'Cash libre', value: fmt(data.cash_balance), color: '#16a34a' },
+                  { label: 'Posiciones', value: `${data.positions.length}`, color: '#0a0a0a' },
+                ].map(k => (
+                  <div key={k.label} style={{ background: '#fafafa', borderRadius: '14px', padding: '14px 16px', border: '1px solid #f0f0f0' }}>
+                    <p style={{ fontSize: '11px', color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 4px' }}>{k.label}</p>
+                    <p style={{ fontSize: '16px', fontWeight: 800, color: k.color, margin: 0, letterSpacing: '-0.01em' }}>{k.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Asset allocation */}
+              {data.positions.length > 0 && (
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>Asset Allocation</p>
+                  <div style={{ display: 'flex', height: '8px', borderRadius: '100px', overflow: 'hidden', marginBottom: '10px', gap: '2px' }}>
+                    {data.positions.map((pos, i) => {
+                      const pct = total > 0 ? (pos.current_value / total) * 100 : 0
+                      const colors = ['#0a0a0a', '#ff6b35', '#16a34a', '#3b82f6', '#8b5cf6']
+                      return <div key={pos.ticker} style={{ width: `${pct}%`, background: colors[i % colors.length], borderRadius: '100px' }} />
+                    })}
+                    <div style={{ flex: 1, background: '#e5e7eb', borderRadius: '100px' }} />
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {data.positions.map((pos, i) => {
+                      const pct = total > 0 ? (pos.current_value / total) * 100 : 0
+                      const colors = ['#0a0a0a', '#ff6b35', '#16a34a', '#3b82f6', '#8b5cf6']
+                      return (
+                        <div key={pos.ticker} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: colors[i % colors.length] }} />
+                          <span style={{ fontSize: '12px', color: '#555' }}>{pos.ticker} {pct.toFixed(1)}%</span>
+                        </div>
+                      )
+                    })}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#e5e7eb' }} />
+                      <span style={{ fontSize: '12px', color: '#555' }}>Cash {total > 0 ? ((data.cash_balance / total) * 100).toFixed(1) : 0}%</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AI Insight */}
+              <div style={{
+                background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
+                borderRadius: '16px', padding: '18px 20px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                  <img src="/gemini.png" alt="Gemini" style={{ width: '18px', height: '18px', objectFit: 'contain' }} />
+                  <span style={{ fontSize: '12px', fontWeight: 700, color: '#fff', letterSpacing: '0.02em' }}>AI Insight</span>
+                  <span style={{ fontSize: '10px', color: '#888', marginLeft: '2px' }}>· powered by Gemini</span>
+                </div>
+                <p style={{ fontSize: '13px', color: '#e5e7eb', lineHeight: 1.65, margin: 0 }}>
+                  Tu cartera muestra una <strong style={{ color: '#ff6b35' }}>concentración elevada en tech</strong> con PLTR y AVGO representando el 17% del total. Con un 82% en cash, tienes amplio margen para diversificar. <strong style={{ color: '#fff' }}>PLTR</strong> mantiene momentum positivo ligado a contratos de defensa e IA gubernamental. Considera añadir exposición a sectores defensivos para reducir volatilidad antes del cierre de liga.
+                </p>
+              </div>
+            </>
+          )}
+
+          {!loading && data && tab === 'holdings' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {data.positions.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 0', color: '#aaa', fontSize: '14px' }}>
+                  Sin posiciones. Compra tu primera acción desde el Trade Panel.
+                </div>
+              ) : (
+                data.positions.map(pos => {
                   const weight = total > 0 ? (pos.current_value / total) * 100 : 0
+                  const spark = sparkData[pos.ticker] ?? [pos.avg_buy_price, pos.current_price]
+                  const isGain = pos.pnl_pct >= 0
                   return (
-                    <div key={pos.ticker} className="rounded-xl border border-border bg-background p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
-                            {pos.ticker.slice(0, 2)}
-                          </div>
+                    <div key={pos.ticker} style={{ border: '1px solid #f0f0f0', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#0a0a0a', flexShrink: 0 }}>
+                        {pos.ticker.slice(0, 2)}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
-                            <p className="text-sm font-bold text-foreground">{pos.ticker}</p>
-                            <p className="text-xs text-muted-foreground">{pos.shares.toFixed(4)} acc. · ${pos.current_price.toFixed(2)}/acc.</p>
+                            <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: '0 0 2px' }}>{pos.ticker}</p>
+                            <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{pos.shares.toFixed(2)} acc · ${pos.current_price.toFixed(2)}</p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: '0 0 2px' }}>{fmt(pos.current_value)}</p>
+                            <p style={{ fontSize: '11px', fontWeight: 700, color: isGain ? '#16a34a' : '#ef4444', margin: 0 }}>{isGain ? '+' : ''}{pos.pnl_pct.toFixed(2)}%</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-foreground">{fmt(pos.current_value)}</p>
-                          <p className={`text-xs font-semibold ${pos.pnl_pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {pos.pnl_pct >= 0 ? '+' : ''}{pos.pnl_pct.toFixed(2)}%
-                          </p>
+                        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ flex: 1, height: '4px', borderRadius: '100px', background: '#f0f0f0', overflow: 'hidden', marginRight: '12px' }}>
+                            <div style={{ height: '4px', borderRadius: '100px', background: '#0a0a0a', width: `${weight}%` }} />
+                          </div>
+                          <Sparkline values={spark} color={isGain ? '#16a34a' : '#ef4444'} />
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                          <div className="h-1.5 rounded-full bg-primary transition-all" style={{ width: `${weight}%` }} />
-                        </div>
-                        <span className="text-[11px] text-muted-foreground shrink-0">{weight.toFixed(1)}% cartera</span>
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground mt-1.5">
-                        <span>Precio medio: ${pos.avg_buy_price.toFixed(2)}</span>
-                        <span>P&L: {pos.pnl >= 0 ? '+' : ''}{fmt(pos.pnl)}</span>
+                        <p style={{ fontSize: '10px', color: '#aaa', margin: '4px 0 0' }}>{weight.toFixed(1)}% de cartera · P&L: {fmt(pos.pnl)}</p>
                       </div>
                     </div>
                   )
-                })}
-              </div>
-            )}
+                })
+              )}
+            </div>
+          )}
 
-            {data.transactions.length > 0 && (
-              <>
-                <h3 className="text-sm font-semibold text-foreground mb-3">Últimas operaciones</h3>
-                <div className="flex flex-col gap-2">
-                  {data.transactions.slice(0, 5).map(tx => (
-                    <div key={tx.id} className="flex items-center gap-3 rounded-xl border border-border bg-background px-4 py-3">
-                      <div className={`flex size-8 items-center justify-center rounded-lg text-xs font-bold text-white ${tx.type === 'buy' ? 'bg-primary' : 'bg-red-500'}`}>
-                        {tx.type === 'buy' ? 'C' : 'V'}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-foreground">{tx.ticker}
-                          <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${tx.type === 'buy' ? 'bg-primary/10 text-primary' : 'bg-red-50 text-red-600'}`}>
-                            {tx.type === 'buy' ? 'Compra' : 'Venta'}
-                          </span>
-                        </p>
-                        <p className="text-xs text-muted-foreground">{Number(tx.shares).toFixed(4)} acc. · ${Number(tx.price_per_share).toFixed(2)}/acc.</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`text-sm font-bold ${tx.type === 'buy' ? 'text-red-500' : 'text-green-600'}`}>
+          {!loading && data && tab === 'history' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {data.transactions.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '48px 0', color: '#aaa', fontSize: '14px' }}>Sin operaciones todavía.</div>
+              ) : (
+                data.transactions.slice(0, 10).map(tx => (
+                  <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #f0f0f0', borderRadius: '14px', padding: '14px 16px' }}>
+                    <div style={{
+                      width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
+                      background: tx.type === 'buy' ? '#0a0a0a' : '#ef4444',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '11px', fontWeight: 700, color: '#fff',
+                    }}>
+                      {tx.type === 'buy' ? 'C' : 'V'}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a', margin: 0 }}>{tx.ticker}</p>
+                        <p style={{ fontSize: '13px', fontWeight: 700, color: tx.type === 'buy' ? '#ef4444' : '#16a34a', margin: 0 }}>
                           {tx.type === 'buy' ? '-' : '+'}{fmt(Number(tx.total_amount))}
                         </p>
-                        <p className="text-[11px] text-muted-foreground">
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+                        <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{Number(tx.shares).toFixed(4)} acc · ${Number(tx.price_per_share).toFixed(2)}/acc</p>
+                        <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>
                           {new Date(tx.executed_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </>
-        )}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -672,17 +784,12 @@ export function Sidebar() {
               <button key={item.label} onClick={() => handleNav(item.label)}
                 className={cn(
                   'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive && isDegen
-                    ? 'bg-red-500 text-white shadow-sm'
-                    : isActive && isCrypto
-                      ? 'bg-orange-500 text-white shadow-sm'
-                      : isActive
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : isDegen
-                          ? 'text-red-500 hover:bg-red-50'
-                          : isCrypto
-                            ? 'text-orange-500 hover:bg-orange-50'
-                            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                  isActive && isDegen ? 'bg-red-500 text-white shadow-sm'
+                    : isActive && isCrypto ? 'bg-orange-500 text-white shadow-sm'
+                    : isActive ? 'bg-primary text-primary-foreground shadow-sm'
+                    : isDegen ? 'text-red-500 hover:bg-red-50'
+                    : isCrypto ? 'text-orange-500 hover:bg-orange-50'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                 )}>
                 <Icon className="size-[18px]" />
                 {item.label}
@@ -695,8 +802,7 @@ export function Sidebar() {
           {bottomNav.map((item) => {
             const Icon = item.icon
             return (
-              <button key={item.label}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
+              <button key={item.label} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground">
                 <Icon className="size-[18px]" />
                 {item.label}
               </button>
@@ -707,17 +813,15 @@ export function Sidebar() {
         <div className="rounded-2xl bg-secondary p-4">
           <p className="text-sm font-semibold text-secondary-foreground">Go Pro</p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Unlock real-time data and unlimited leagues.</p>
-          <button className="mt-3 w-full rounded-lg bg-highlight px-3 py-2 text-xs font-semibold text-highlight-foreground transition-opacity hover:opacity-90">
-            Upgrade
-          </button>
+          <button className="mt-3 w-full rounded-lg bg-highlight px-3 py-2 text-xs font-semibold text-highlight-foreground transition-opacity hover:opacity-90">Upgrade</button>
         </div>
       </aside>
 
-      {showLeagues   && <LeaguesPanel   onClose={() => setShowLeagues(false)} />}
-      {showMarkets   && <MarketsPanel   onClose={() => setShowMarkets(false)} />}
+      {showLeagues   && <LeaguesPanel    onClose={() => setShowLeagues(false)} />}
+      {showMarkets   && <MarketsPanel    onClose={() => setShowMarkets(false)} />}
       {showCrypto    && <CryptoBoostPanel onClose={() => setShowCrypto(false)} />}
-      {showDegen     && <DegenTradePanel onClose={() => setShowDegen(false)} />}
-      {showPortfolio && <PortfolioPanel  onClose={() => setShowPortfolio(false)} />}
+      {showDegen     && <DegenTradePanel  onClose={() => setShowDegen(false)} />}
+      {showPortfolio && <PortfolioPanel   onClose={() => setShowPortfolio(false)} />}
     </>
   )
 }
