@@ -90,47 +90,38 @@ export default function LandingPage() {
             Real stock prices · Powered by Polygon.io
           </div>
 
-          {/* Título flotante con profundidad */}
-          <h1 style={{
-            fontSize: 'clamp(38px, 5.5vw, 76px)',
-            fontWeight: 900, color: '#0a0a0a',
-            lineHeight: 1.05, letterSpacing: '-0.04em',
-            margin: '0 auto 24px', maxWidth: '820px', padding: '0 24px',
-            textShadow: `
-              0 1px 0 rgba(255,255,255,1),
-              0 2px 0 rgba(255,255,255,0.9),
-              0 4px 8px rgba(255,255,255,1),
-              0 8px 24px rgba(255,255,255,0.95),
-              0 16px 48px rgba(255,255,255,0.8),
-              2px 2px 0 rgba(255,255,255,0.6),
-              -2px -2px 0 rgba(255,255,255,0.6)
-            `,
-            filter: 'drop-shadow(0 4px 32px rgba(255,255,255,1)) drop-shadow(0 0 60px rgba(255,255,255,0.95))',
+          {/* Pastilla con sombra que envuelve el copy */}
+          <div style={{
+            display: 'inline-block',
+            background: 'rgba(255, 255, 255, 0.72)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderRadius: '32px',
+            padding: '40px 48px 36px',
+            margin: '0 24px 40px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
+            border: '1px solid rgba(255,255,255,0.8)',
+            maxWidth: '820px',
           }}>
-            Research, choose and<br />
-            <span style={{
-              color: '#ff6b35',
-              textShadow: `
-                0 1px 0 rgba(255,255,255,1),
-                0 2px 0 rgba(255,255,255,0.9),
-                0 4px 8px rgba(255,255,255,1),
-                0 8px 24px rgba(255,255,255,0.95),
-                0 16px 48px rgba(255,255,255,0.8)
-              `,
-              filter: 'drop-shadow(0 4px 32px rgba(255,255,255,1))',
-            }}>create the best portfolio</span><br />
-            among your peers.
-          </h1>
+            <h1 style={{
+              fontSize: 'clamp(36px, 5vw, 72px)',
+              fontWeight: 900, color: '#0a0a0a',
+              lineHeight: 1.05, letterSpacing: '-0.04em',
+              margin: '0 0 16px',
+            }}>
+              Descubre, elige y crea<br />
+              <span style={{ color: '#ff6b35' }}>el mejor portfolio</span><br />
+              entre tus competidores.
+            </h1>
 
-          {/* Subtítulo */}
-          <p style={{
-            fontSize: '18px', color: '#555',
-            maxWidth: '460px', margin: '0 auto 40px',
-            lineHeight: 1.65, padding: '0 24px',
-            textShadow: '0 2px 16px rgba(255,255,255,1), 0 0 32px rgba(255,255,255,1)',
-          }}>
-            Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
-          </p>
+            <p style={{
+              fontSize: '17px', color: '#666',
+              maxWidth: '420px', margin: '0 auto',
+              lineHeight: 1.65,
+            }}>
+              Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
+            </p>
+          </div>
 
           {/* CTAs */}
           <div style={{
@@ -152,7 +143,6 @@ export default function LandingPage() {
               color: '#0a0a0a', fontSize: '15px', fontWeight: 600,
               textDecoration: 'none',
               boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-              backdropFilter: 'blur(8px)',
             }}>Iniciar sesión</a>
           </div>
 
