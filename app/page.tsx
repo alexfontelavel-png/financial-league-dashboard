@@ -42,11 +42,15 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section style={{
-        paddingTop: '140px', paddingBottom: '60px',
+        paddingTop: '120px', paddingBottom: '60px',
         textAlign: 'center',
         position: 'relative',
         overflow: 'hidden',
         minHeight: '720px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}>
         {/* Logo Amazon — izquierda */}
         <div style={{
@@ -76,32 +80,34 @@ export default function LandingPage() {
           <img src="/broadcom-3d.png" alt="" style={{ width: '100%', display: 'block' }} />
         </div>
 
-        {/* Contenido en primer plano */}
-        <div style={{ position: 'relative', zIndex: 2 }}>
+        {/* Contenido centrado en primer plano */}
+        <div style={{ position: 'relative', zIndex: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-          {/* Badge */}
+          {/* Badge centrado encima de la pastilla */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
-            background: '#f5f5f5', borderRadius: '100px',
-            padding: '6px 14px', marginBottom: '28px',
+            background: 'rgba(245,245,245,0.9)', backdropFilter: 'blur(8px)',
+            borderRadius: '100px',
+            padding: '6px 14px', marginBottom: '16px',
             fontSize: '12px', fontWeight: 600, color: '#555',
+            border: '1px solid rgba(0,0,0,0.06)',
           }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6b35', display: 'inline-block' }} />
             Real stock prices · Powered by Polygon.io
           </div>
 
-          {/* Pastilla con sombra que envuelve el copy */}
+          {/* Pastilla centrada semitransparente */}
           <div style={{
-            display: 'inline-block',
-            background: 'rgba(255, 255, 255, 0.72)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+            background: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
             borderRadius: '32px',
-            padding: '40px 48px 36px',
-            margin: '0 24px 40px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9)',
-            border: '1px solid rgba(255,255,255,0.8)',
-            maxWidth: '820px',
+            padding: '44px 56px 40px',
+            margin: '0 24px',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
+            border: '1px solid rgba(255,255,255,0.7)',
+            maxWidth: '780px',
+            width: '100%',
           }}>
             <h1 style={{
               fontSize: 'clamp(36px, 5vw, 72px)',
@@ -116,7 +122,7 @@ export default function LandingPage() {
 
             <p style={{
               fontSize: '17px', color: '#666',
-              maxWidth: '420px', margin: '0 auto',
+              maxWidth: '400px', margin: '0 auto',
               lineHeight: 1.65,
             }}>
               Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
@@ -126,14 +132,15 @@ export default function LandingPage() {
           {/* CTAs */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            gap: '12px', flexWrap: 'wrap', padding: '0 24px', marginBottom: '80px',
+            gap: '12px', flexWrap: 'wrap', padding: '0 24px',
+            marginTop: '32px', marginBottom: '80px',
           }}>
             <a href="/register" style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               padding: '14px 28px', borderRadius: '100px',
               background: '#0a0a0a', color: '#fff',
               fontSize: '15px', fontWeight: 700, textDecoration: 'none',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.12)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
             }}>Empieza gratis →</a>
             <a href="/login" style={{
               display: 'inline-flex', alignItems: 'center',
@@ -154,6 +161,7 @@ export default function LandingPage() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '20px',
             alignItems: 'start',
+            width: '100%',
           }}>
             {[
               { img: '/screen1.png', label: 'Tu portfolio en tiempo real', desc: 'Consulta tu valor total, cash disponible y posiciones abiertas.', offset: '0px', accent: '#f0fdf4' },
