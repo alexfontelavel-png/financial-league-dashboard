@@ -30,41 +30,36 @@ export default function LandingPage() {
             border: '1px solid #e0e0e0', background: 'transparent',
             fontSize: '14px', fontWeight: 500, color: '#0a0a0a',
             textDecoration: 'none',
-          }}>
-            Sign in
-          </a>
+          }}>Sign in</a>
           <a href="/register" style={{
             padding: '8px 18px', borderRadius: '100px',
             background: '#0a0a0a', border: '1px solid #0a0a0a',
             fontSize: '14px', fontWeight: 600, color: '#ffffff',
             textDecoration: 'none',
-          }}>
-            Sign up
-          </a>
+          }}>Sign up</a>
         </div>
       </nav>
 
       {/* Hero */}
       <section style={{
-        paddingTop: '140px', paddingBottom: '80px',
-        textAlign: 'center', position: 'relative', overflow: 'hidden',
+        paddingTop: '140px', paddingBottom: '60px',
+        textAlign: 'center', overflow: 'hidden',
       }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: '6px',
           background: '#f5f5f5', borderRadius: '100px',
           padding: '6px 14px', marginBottom: '28px',
           fontSize: '12px', fontWeight: 600, color: '#555',
-          letterSpacing: '0.02em',
         }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6b35', display: 'inline-block' }} />
           Real stock prices · Powered by Polygon.io
         </div>
 
         <h1 style={{
-          fontSize: 'clamp(40px, 6vw, 80px)',
+          fontSize: 'clamp(38px, 5.5vw, 76px)',
           fontWeight: 900, color: '#0a0a0a',
           lineHeight: 1.05, letterSpacing: '-0.04em',
-          margin: '0 auto 24px', maxWidth: '800px', padding: '0 24px',
+          margin: '0 auto 24px', maxWidth: '820px', padding: '0 24px',
         }}>
           Research, choose and<br />
           <span style={{ color: '#ff6b35' }}>create the best portfolio</span><br />
@@ -72,83 +67,114 @@ export default function LandingPage() {
         </h1>
 
         <p style={{
-          fontSize: '18px', fontWeight: 400, color: '#666',
-          maxWidth: '480px', margin: '0 auto 40px',
-          lineHeight: 1.6, padding: '0 24px',
+          fontSize: '18px', color: '#666',
+          maxWidth: '460px', margin: '0 auto 40px',
+          lineHeight: 1.65, padding: '0 24px',
         }}>
           Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
         </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', padding: '0 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', padding: '0 24px', marginBottom: '80px' }}>
           <a href="/register" style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             padding: '14px 28px', borderRadius: '100px',
             background: '#0a0a0a', color: '#fff',
-            fontSize: '15px', fontWeight: 700,
-            textDecoration: 'none', letterSpacing: '-0.01em',
-          }}>
-            Empieza gratis →
-          </a>
+            fontSize: '15px', fontWeight: 700, textDecoration: 'none',
+          }}>Empieza gratis →</a>
           <a href="/login" style={{
             display: 'inline-flex', alignItems: 'center',
             padding: '14px 28px', borderRadius: '100px',
             border: '1px solid #e0e0e0', background: '#fff',
             color: '#0a0a0a', fontSize: '15px', fontWeight: 600,
             textDecoration: 'none',
-          }}>
-            Iniciar sesión
-          </a>
+          }}>Iniciar sesión</a>
         </div>
-      </section>
 
-      {/* iPhone Mockups */}
-      <section style={{
-        padding: '20px 24px 100px',
-        display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
-        gap: '24px', flexWrap: 'wrap',
-      }}>
-        {[
-          { img: '/screenshots/screen1.png', label: 'Tu portfolio en tiempo real', offset: '40px' },
-          { img: '/screenshots/screen2.png', label: 'Crypto Boost & features premium', offset: '0px' },
-          { img: '/screenshots/screen3.png', label: 'Markets: gainers & losers del día', offset: '60px' },
-        ].map((item, i) => (
-          <div key={i} style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
-            marginTop: item.offset,
-          }}>
-            <div style={{
-              width: '260px', height: '530px',
-              background: '#0a0a0a', borderRadius: '44px', padding: '12px',
-              boxShadow: '0 40px 80px rgba(0,0,0,0.18)',
-              position: 'relative',
-            }}>
+        {/* Screenshot cards */}
+        <div style={{
+          maxWidth: '1100px', margin: '0 auto',
+          padding: '0 24px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '20px',
+          alignItems: 'start',
+        }}>
+          {[
+            {
+              img: '/screenshots/screen1.png',
+              label: 'Tu portfolio en tiempo real',
+              desc: 'Consulta tu valor total, cash disponible y posiciones abiertas.',
+              offset: '0px',
+              accent: '#f0fdf4',
+            },
+            {
+              img: '/screenshots/screen2.png',
+              label: 'Crypto Boost & features premium',
+              desc: 'Añade exposición a crypto y apalanca tus mejores trades.',
+              offset: '32px',
+              accent: '#fff8f5',
+            },
+            {
+              img: '/screenshots/screen3.png',
+              label: 'Markets en tiempo real',
+              desc: 'Daily gainers y losers con precios reales del mercado.',
+              offset: '16px',
+              accent: '#f5f5ff',
+            },
+          ].map((item, i) => (
+            <div key={i} style={{ marginTop: item.offset }}>
+              {/* Card imagen */}
               <div style={{
-                position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)',
-                width: '80px', height: '24px', background: '#0a0a0a',
-                borderRadius: '12px', zIndex: 10,
-              }} />
-              <div style={{
-                width: '100%', height: '100%',
-                borderRadius: '36px', overflow: 'hidden',
-                background: i === 0 ? '#f7f7fb' : i === 1 ? '#fff8f5' : '#f5f5f5',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+                border: '1px solid rgba(0,0,0,0.06)',
+                background: item.accent,
+                marginBottom: '16px',
+                position: 'relative',
               }}>
+                {/* Barra de navegador simulada */}
+                <div style={{
+                  padding: '10px 14px',
+                  background: '#f8f8f8',
+                  borderBottom: '1px solid #ebebeb',
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }} />
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }} />
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }} />
+                  <div style={{
+                    flex: 1, margin: '0 8px',
+                    background: '#ebebeb', borderRadius: '4px',
+                    height: '16px',
+                  }} />
+                </div>
                 <img
                   src={item.img}
                   alt={item.label}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                  style={{
+                    width: '100%',
+                    display: 'block',
+                    objectFit: 'cover',
+                    objectPosition: 'top',
+                    maxHeight: '320px',
+                  }}
                 />
               </div>
+              {/* Texto debajo */}
+              <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', marginBottom: '4px', textAlign: 'left' }}>
+                {item.label}
+              </p>
+              <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.5, textAlign: 'left' }}>
+                {item.desc}
+              </p>
             </div>
-            <p style={{ fontSize: '13px', color: '#888', fontWeight: 500, textAlign: 'center', maxWidth: '200px' }}>
-              {item.label}
-            </p>
-          </div>
-        ))}
+          ))}
+        </div>
       </section>
 
       {/* Features */}
-      <section style={{ padding: '80px 24px', background: '#fafafa', borderTop: '1px solid #f0f0f0' }}>
+      <section style={{ padding: '100px 24px', background: '#fafafa', borderTop: '1px solid #f0f0f0', marginTop: '80px' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <h2 style={{
             fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 900,
@@ -156,7 +182,7 @@ export default function LandingPage() {
           }}>
             Todo lo que necesitas para competir
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
             {[
               { icon: '📈', title: 'Precios reales', desc: 'Datos de S&P500, NASDAQ y EUROSTOXX actualizados vía Polygon.io.' },
               { icon: '🏆', title: 'Ligas privadas', desc: 'Crea ligas con tus amigos, paga la entrada y compite por el bote.' },
