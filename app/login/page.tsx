@@ -16,8 +16,8 @@ export default function LoginPage() {
     setError(''); setLoading(true)
     const { error: err } = await authClient.signIn.email({ email, password })
     if (err) { setError(err.message ?? 'Error al iniciar sesión'); setLoading(false); return }
-    router.push('/')
-    router.refresh()
+    router.push('/dashboard')
+router.refresh()
   }
 
   return (
