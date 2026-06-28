@@ -54,28 +54,20 @@ export default function LandingPage() {
       }}>
         {/* Logo Amazon — izquierda */}
         <div style={{
-          position: 'absolute',
-          top: '50px',
-          left: '-40px',
-          width: '360px',
-          opacity: 1,
+          position: 'absolute', top: '50px', left: '-40px',
+          width: '360px', opacity: 1,
           transform: 'rotate(-6deg)',
-          pointerEvents: 'none',
-          zIndex: 0,
+          pointerEvents: 'none', zIndex: 0,
         }}>
           <img src="/amazon-3d.png" alt="" style={{ width: '100%', display: 'block' }} />
         </div>
 
         {/* Logo Broadcom — derecha y más abajo */}
         <div style={{
-          position: 'absolute',
-          top: '260px',
-          right: '-40px',
-          width: '320px',
-          opacity: 1,
+          position: 'absolute', top: '260px', right: '-40px',
+          width: '320px', opacity: 1,
           transform: 'rotate(6deg)',
-          pointerEvents: 'none',
-          zIndex: 0,
+          pointerEvents: 'none', zIndex: 0,
         }}>
           <img src="/broadcom-3d.png" alt="" style={{ width: '100%', display: 'block' }} />
         </div>
@@ -83,12 +75,11 @@ export default function LandingPage() {
         {/* Contenido centrado en primer plano */}
         <div style={{ position: 'relative', zIndex: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-          {/* Badge centrado encima de la pastilla */}
+          {/* Badge */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             background: 'rgba(245,245,245,0.9)', backdropFilter: 'blur(8px)',
-            borderRadius: '100px',
-            padding: '6px 14px', marginBottom: '16px',
+            borderRadius: '100px', padding: '6px 14px', marginBottom: '16px',
             fontSize: '12px', fontWeight: 600, color: '#555',
             border: '1px solid rgba(0,0,0,0.06)',
           }}>
@@ -96,18 +87,16 @@ export default function LandingPage() {
             Real stock prices · Powered by Polygon.io
           </div>
 
-          {/* Pastilla centrada semitransparente */}
+          {/* Pastilla */}
           <div style={{
-            background: 'rgba(255, 255, 255, 0.65)',
+            background: 'rgba(255,255,255,0.65)',
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
-            borderRadius: '32px',
-            padding: '44px 56px 40px',
+            borderRadius: '32px', padding: '44px 56px 40px',
             margin: '0 24px',
             boxShadow: '0 8px 40px rgba(0,0,0,0.07), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8)',
             border: '1px solid rgba(255,255,255,0.7)',
-            maxWidth: '780px',
-            width: '100%',
+            maxWidth: '780px', width: '100%',
           }}>
             <h1 style={{
               fontSize: 'clamp(36px, 5vw, 72px)',
@@ -119,11 +108,9 @@ export default function LandingPage() {
               <span style={{ color: '#ff6b35' }}>el mejor portfolio</span><br />
               entre tus competidores.
             </h1>
-
             <p style={{
               fontSize: '17px', color: '#666',
-              maxWidth: '400px', margin: '0 auto',
-              lineHeight: 1.65,
+              maxWidth: '400px', margin: '0 auto', lineHeight: 1.65,
             }}>
               Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
             </p>
@@ -159,9 +146,7 @@ export default function LandingPage() {
             padding: '0 24px',
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '20px',
-            alignItems: 'start',
-            width: '100%',
+            gap: '20px', alignItems: 'start', width: '100%',
           }}>
             {[
               { img: '/screen1.png', label: 'Tu portfolio en tiempo real', desc: 'Consulta tu valor total, cash disponible y posiciones abiertas.', offset: '0px', accent: '#f0fdf4' },
@@ -200,30 +185,46 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section style={{ padding: '100px 24px', background: '#fafafa', borderTop: '1px solid #f0f0f0' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <section style={{ padding: '100px 24px', background: '#ffffff', borderTop: '1px solid #f0f0f0' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
           <h2 style={{
-            fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 900,
-            color: '#0a0a0a', textAlign: 'center', letterSpacing: '-0.03em', marginBottom: '60px',
+            fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 900,
+            color: '#0a0a0a', textAlign: 'center', letterSpacing: '-0.03em',
+            marginBottom: '64px', lineHeight: 1.05,
           }}>
-            Todo lo que necesitas para competir
+            Todo lo que necesitas<br />para competir
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
             {[
-              { icon: '📈', title: 'Precios reales', desc: 'Datos de S&P500, NASDAQ y EUROSTOXX actualizados vía Polygon.io.' },
-              { icon: '🏆', title: 'Ligas privadas', desc: 'Crea ligas con tus amigos, paga la entrada y compite por el bote.' },
-              { icon: '⚡', title: 'Crypto Boost', desc: 'Añade exposición a crypto para incrementar la volatilidad de tu portfolio.' },
-              { icon: '🔥', title: 'Degen Trades', desc: 'Apalanca tus posiciones 2x o 3x si tienes convicción en un movimiento.' },
-              { icon: '🤖', title: 'AI Financial Agent', desc: 'Pregunta al agente qué acciones pueden subir y recibe análisis en tiempo real.' },
-              { icon: '💸', title: '€10.000 virtuales', desc: 'Empieza con €10.000 de capital virtual y construye el mejor portfolio.' },
+              { title: 'Precios reales', desc: 'Datos de S&P500, NASDAQ y EUROSTOXX actualizados vía Polygon.io.' },
+              { title: 'Ligas privadas', desc: 'Crea ligas con tus amigos, paga la entrada y compite por el bote.' },
+              { title: 'Crypto Boost', desc: 'Añade exposición a crypto para incrementar la volatilidad de tu portfolio.' },
+              { title: 'Degen Trades', desc: 'Apalanca tus posiciones 2x o 3x si tienes convicción en un movimiento.' },
+              { title: 'AI Financial Agent', desc: 'Pregunta al agente qué acciones pueden subir y recibe análisis en tiempo real.' },
+              { title: '€10.000 virtuales', desc: 'Empieza con €10.000 de capital virtual y construye el mejor portfolio.' },
             ].map((f, i) => (
               <div key={i} style={{
-                background: '#fff', borderRadius: '20px', padding: '28px',
-                border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                background: '#ffffff', borderRadius: '20px', padding: '32px 28px',
+                border: '1px solid #ebebeb',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.04)',
+                display: 'flex', flexDirection: 'column', gap: '16px',
               }}>
-                <div style={{ fontSize: '28px', marginBottom: '12px' }}>{f.icon}</div>
-                <p style={{ fontSize: '16px', fontWeight: 800, color: '#0a0a0a', marginBottom: '8px', letterSpacing: '-0.01em' }}>{f.title}</p>
-                <p style={{ fontSize: '14px', color: '#666', lineHeight: 1.6 }}>{f.desc}</p>
+                {/* Placeholder imagen */}
+                <div style={{
+                  width: '56px', height: '56px', borderRadius: '14px',
+                  background: '#f5f5f5', border: '1px solid #ebebeb',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="3"/>
+                    <path d="M3 9h18M9 21V9"/>
+                  </svg>
+                </div>
+                <div>
+                  <p style={{ fontSize: '16px', fontWeight: 700, color: '#0a0a0a', marginBottom: '8px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>{f.title}</p>
+                  <p style={{ fontSize: '14px', color: '#888', lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+                </div>
               </div>
             ))}
           </div>
