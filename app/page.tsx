@@ -43,156 +43,169 @@ export default function LandingPage() {
       {/* Hero */}
       <section style={{
         paddingTop: '140px', paddingBottom: '60px',
-        textAlign: 'center', overflow: 'hidden',
+        textAlign: 'center',
         position: 'relative',
+        overflow: 'hidden',
+        minHeight: '680px',
       }}>
-        {/* Logo Amazon — esquina superior izquierda */}
+        {/* Logo Amazon — izquierda, grande y visible */}
         <div style={{
-          position: 'absolute', top: '60px', left: '-20px',
-          width: '320px', opacity: 0.18,
-          transform: 'rotate(-12deg)',
-          pointerEvents: 'none', userSelect: 'none',
-          filter: 'blur(0.5px)',
+          position: 'absolute',
+          top: '40px',
+          left: '-60px',
+          width: '380px',
+          opacity: 0.55,
+          transform: 'rotate(-8deg) scale(1)',
+          pointerEvents: 'none',
+          zIndex: 0,
         }}>
           <img src="/amazon-3d.png" alt="" style={{ width: '100%' }} />
         </div>
 
-        {/* Logo Broadcom — esquina inferior derecha */}
+        {/* Logo Broadcom — derecha, grande y visible */}
         <div style={{
-          position: 'absolute', bottom: '20px', right: '-30px',
-          width: '280px', opacity: 0.15,
-          transform: 'rotate(10deg)',
-          pointerEvents: 'none', userSelect: 'none',
-          filter: 'blur(0.5px)',
+          position: 'absolute',
+          top: '80px',
+          right: '-60px',
+          width: '340px',
+          opacity: 0.5,
+          transform: 'rotate(8deg) scale(1)',
+          pointerEvents: 'none',
+          zIndex: 0,
         }}>
           <img src="/broadcom-3d.png" alt="" style={{ width: '100%' }} />
         </div>
 
-        {/* Badge */}
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '6px',
-          background: '#f5f5f5', borderRadius: '100px',
-          padding: '6px 14px', marginBottom: '28px',
-          fontSize: '12px', fontWeight: 600, color: '#555',
-          position: 'relative', zIndex: 1,
-        }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6b35', display: 'inline-block' }} />
-          Real stock prices · Powered by Polygon.io
-        </div>
+        {/* Contenido en primer plano */}
+        <div style={{ position: 'relative', zIndex: 2 }}>
 
-        {/* Título */}
-        <h1 style={{
-          fontSize: 'clamp(38px, 5.5vw, 76px)',
-          fontWeight: 900, color: '#0a0a0a',
-          lineHeight: 1.05, letterSpacing: '-0.04em',
-          margin: '0 auto 24px', maxWidth: '820px', padding: '0 24px',
-          position: 'relative', zIndex: 1,
-        }}>
-          Research, choose and<br />
-          <span style={{ color: '#ff6b35' }}>create the best portfolio</span><br />
-          among your peers.
-        </h1>
+          {/* Badge */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            background: '#f5f5f5', borderRadius: '100px',
+            padding: '6px 14px', marginBottom: '28px',
+            fontSize: '12px', fontWeight: 600, color: '#555',
+          }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff6b35', display: 'inline-block' }} />
+            Real stock prices · Powered by Polygon.io
+          </div>
 
-        {/* Subtítulo */}
-        <p style={{
-          fontSize: '18px', color: '#666',
-          maxWidth: '460px', margin: '0 auto 40px',
-          lineHeight: 1.65, padding: '0 24px',
-          position: 'relative', zIndex: 1,
-        }}>
-          Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
-        </p>
+          {/* Título con sombra para dar profundidad */}
+          <h1 style={{
+            fontSize: 'clamp(38px, 5.5vw, 76px)',
+            fontWeight: 900, color: '#0a0a0a',
+            lineHeight: 1.05, letterSpacing: '-0.04em',
+            margin: '0 auto 24px', maxWidth: '820px', padding: '0 24px',
+            textShadow: '0 2px 40px rgba(255,255,255,0.9), 0 0 80px rgba(255,255,255,1), 0 4px 24px rgba(255,255,255,0.8)',
+          }}>
+            Research, choose and<br />
+            <span style={{
+              color: '#ff6b35',
+              textShadow: '0 2px 40px rgba(255,255,255,0.95), 0 0 60px rgba(255,255,255,1)',
+            }}>create the best portfolio</span><br />
+            among your peers.
+          </h1>
 
-        {/* CTAs */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: '12px', flexWrap: 'wrap', padding: '0 24px', marginBottom: '80px',
-          position: 'relative', zIndex: 1,
-        }}>
-          <a href="/register" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            padding: '14px 28px', borderRadius: '100px',
-            background: '#0a0a0a', color: '#fff',
-            fontSize: '15px', fontWeight: 700, textDecoration: 'none',
-          }}>Empieza gratis →</a>
-          <a href="/login" style={{
-            display: 'inline-flex', alignItems: 'center',
-            padding: '14px 28px', borderRadius: '100px',
-            border: '1px solid #e0e0e0', background: '#fff',
-            color: '#0a0a0a', fontSize: '15px', fontWeight: 600,
-            textDecoration: 'none',
-          }}>Iniciar sesión</a>
-        </div>
+          {/* Subtítulo */}
+          <p style={{
+            fontSize: '18px', color: '#666',
+            maxWidth: '460px', margin: '0 auto 40px',
+            lineHeight: 1.65, padding: '0 24px',
+          }}>
+            Compite en ligas privadas con dinero virtual y precios reales de bolsa. El mejor portfolio gana el bote.
+          </p>
 
-        {/* Screenshot cards */}
-        <div style={{
-          maxWidth: '1100px', margin: '0 auto',
-          padding: '0 24px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '20px',
-          alignItems: 'start',
-          position: 'relative', zIndex: 1,
-        }}>
-          {[
-            {
-              img: '/screen1.png',
-              label: 'Tu portfolio en tiempo real',
-              desc: 'Consulta tu valor total, cash disponible y posiciones abiertas.',
-              offset: '0px',
-              accent: '#f0fdf4',
-            },
-            {
-              img: '/screen2.png',
-              label: 'Crypto Boost & features premium',
-              desc: 'Añade exposición a crypto y apalanca tus mejores trades.',
-              offset: '32px',
-              accent: '#fff8f5',
-            },
-            {
-              img: '/screen3.png',
-              label: 'Markets en tiempo real',
-              desc: 'Daily gainers y losers con precios reales del mercado.',
-              offset: '16px',
-              accent: '#f5f5ff',
-            },
-          ].map((item, i) => (
-            <div key={i} style={{ marginTop: item.offset }}>
-              <div style={{
-                borderRadius: '20px', overflow: 'hidden',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
-                border: '1px solid rgba(0,0,0,0.06)',
-                background: item.accent, marginBottom: '16px',
-              }}>
+          {/* CTAs */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: '12px', flexWrap: 'wrap', padding: '0 24px', marginBottom: '80px',
+          }}>
+            <a href="/register" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '14px 28px', borderRadius: '100px',
+              background: '#0a0a0a', color: '#fff',
+              fontSize: '15px', fontWeight: 700, textDecoration: 'none',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+            }}>Empieza gratis →</a>
+            <a href="/login" style={{
+              display: 'inline-flex', alignItems: 'center',
+              padding: '14px 28px', borderRadius: '100px',
+              border: '1px solid #e0e0e0', background: 'rgba(255,255,255,0.9)',
+              color: '#0a0a0a', fontSize: '15px', fontWeight: 600,
+              textDecoration: 'none',
+              backdropFilter: 'blur(8px)',
+            }}>Iniciar sesión</a>
+          </div>
+
+          {/* Screenshot cards */}
+          <div style={{
+            maxWidth: '1100px', margin: '0 auto',
+            padding: '0 24px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '20px',
+            alignItems: 'start',
+          }}>
+            {[
+              {
+                img: '/screen1.png',
+                label: 'Tu portfolio en tiempo real',
+                desc: 'Consulta tu valor total, cash disponible y posiciones abiertas.',
+                offset: '0px',
+                accent: '#f0fdf4',
+              },
+              {
+                img: '/screen2.png',
+                label: 'Crypto Boost & features premium',
+                desc: 'Añade exposición a crypto y apalanca tus mejores trades.',
+                offset: '32px',
+                accent: '#fff8f5',
+              },
+              {
+                img: '/screen3.png',
+                label: 'Markets en tiempo real',
+                desc: 'Daily gainers y losers con precios reales del mercado.',
+                offset: '16px',
+                accent: '#f5f5ff',
+              },
+            ].map((item, i) => (
+              <div key={i} style={{ marginTop: item.offset }}>
                 <div style={{
-                  padding: '10px 14px', background: '#f8f8f8',
-                  borderBottom: '1px solid #ebebeb',
-                  display: 'flex', alignItems: 'center', gap: '6px',
+                  borderRadius: '20px', overflow: 'hidden',
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+                  border: '1px solid rgba(0,0,0,0.06)',
+                  background: item.accent, marginBottom: '16px',
                 }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }} />
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }} />
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }} />
-                  <div style={{ flex: 1, margin: '0 8px', background: '#ebebeb', borderRadius: '4px', height: '16px' }} />
+                  <div style={{
+                    padding: '10px 14px', background: '#f8f8f8',
+                    borderBottom: '1px solid #ebebeb',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                  }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57' }} />
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }} />
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#28c840' }} />
+                    <div style={{ flex: 1, margin: '0 8px', background: '#ebebeb', borderRadius: '4px', height: '16px' }} />
+                  </div>
+                  <img
+                    src={item.img}
+                    alt={item.label}
+                    style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top', maxHeight: '320px' }}
+                  />
                 </div>
-                <img
-                  src={item.img}
-                  alt={item.label}
-                  style={{ width: '100%', display: 'block', objectFit: 'cover', objectPosition: 'top', maxHeight: '320px' }}
-                />
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', marginBottom: '4px', textAlign: 'left' }}>
+                  {item.label}
+                </p>
+                <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.5, textAlign: 'left' }}>
+                  {item.desc}
+                </p>
               </div>
-              <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', marginBottom: '4px', textAlign: 'left' }}>
-                {item.label}
-              </p>
-              <p style={{ fontSize: '13px', color: '#888', lineHeight: 1.5, textAlign: 'left' }}>
-                {item.desc}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Features */}
-      <section style={{ padding: '100px 24px', background: '#fafafa', borderTop: '1px solid #f0f0f0', marginTop: '80px' }}>
+      <section style={{ padding: '100px 24px', background: '#fafafa', borderTop: '1px solid #f0f0f0' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <h2 style={{
             fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 900,
