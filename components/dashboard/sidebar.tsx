@@ -23,21 +23,6 @@ const bottomNav = [
   { label: 'Support', icon: LifeBuoy },
 ]
 
-const LEAGUES = [
-  {
-    id: 1,
-    name: '2026 League',
-    features: [
-      'Trading available SP500 + NASDAQ + EUROSTOXX',
-      'Cuota de entrada 50€',
-      'Duración 60 días',
-    ],
-    spots: { taken: 36, total: 70 },
-    prize: 1700,
-    joined: false,
-  },
-]
-
 const TICKER_DOMAINS: Record<string, string> = {
   AAPL: 'apple.com', MSFT: 'microsoft.com', GOOGL: 'google.com',
   GOOG: 'google.com', AMZN: 'amazon.com', META: 'meta.com',
@@ -354,7 +339,6 @@ function LeaguesPanel({ onClose }: { onClose: () => void }) {
 
               {leagueData && (
                 <div className="flex flex-col gap-3">
-                  {/* Info card */}
                   <div className="rounded-2xl bg-primary p-5">
                     <div className="flex items-start justify-between mb-4">
                       <div>
@@ -394,7 +378,6 @@ function LeaguesPanel({ onClose }: { onClose: () => void }) {
                     </button>
                   </div>
 
-                  {/* Ranking */}
                   {leagueData.members.length > 0 ? (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
@@ -430,356 +413,6 @@ function LeaguesPanel({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-        </div>
-      </div>
-    </div>
-  )
-}
-
-  async function handleSearch() {
-    if (!searchName.trim()) return
-    setSearching(true); setLeagueData(null); setSearchError(''); setJoinMsg('')
-    try {
-      const res = await fetch(`/api/leagues?name=${encodeURIComponent(searchName.trim())}`)
-      const data = await res.json()
-      if (res.ok) setLeagueData(data)
-      else setSearchError(data.error ?? 'Liga no encontrada')
-    } catch {
-      setSearchError('Error de red.')
-    }
-    setSearching(false)
-  }
-
-  async function handleJoin(league_id: string) {
-    setJoining(true); setJoinMsg('')
-    try {
-      const res = await fetch('/api/leagues/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ league_id }),
-      })
-      const data = await res.json()
-      if (data.success) {
-        setJoinMsg('✓ Te has unido a la liga')
-        handleSearch()
-      } else {
-        setJoinMsg(data.error ?? 'Error al unirse')
-      }
-    } catch {
-      setJoinMsg('Error de red.')
-    }
-    setJoining(false)
-  }
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%', height: '44px', borderRadius: '12px',
-    border: '1px solid #e5e7eb', background: '#fafafa',
-    padding: '0 14px', fontSize: '14px', color: '#0a0a0a',
-    outline: 'none', boxSizing: 'border-box',
-    fontFamily: 'system-ui, -apple-system, sans-serif',
-  }
-  const labelStyle: React.CSSProperties = {
-    fontSize: '12px', fontWeight: 600, color: '#6b7280',
-    display: 'block', marginBottom: '6px',
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="modal-content" style={{
-        width: '100%', maxWidth: '560px', borderRadius: '24px',
-        background: '#ffffff', boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
-        margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
-        maxHeight: '90vh', overflowY: 'auto',
-      }}>
-
-        {/* Header */}
-        <div style={{ padding: '24px 28px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {view !== 'menu' && (
-              <button onClick={() => { setView('menu'); setCreateResult(null); setLeagueData(null); setSearchError(''); setJoinMsg('') }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: '18px', lineHeight: 1, padding: '0 4px 0 0' }}>
-                ←
-              </button>
-            )}
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0a0a0a', margin: 0, letterSpacing: '-0.02em' }}>
-                {view === 'menu' ? 'Ligas' : view === 'create' ? 'Crear liga' : 'Buscar liga'}
-              </h2>
-              <p style={{ fontSize: '12px', color: '#9ca3af', margin: '2px 0 0' }}>
-                {view === 'menu' ? 'Crea o únete a una liga' : view === 'create' ? 'Configura tu competición' : 'Encuentra una liga por nombre'}
-              </p>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <X size={16} color="#666" />
-          </button>
-        </div>
-
-        <div style={{ padding: '24px 28px' }}>
-
-          {/* MENU */}
-          {view === 'menu' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <button onClick={() => setView('create')} style={{
-                display: 'flex', alignItems: 'center', gap: '16px',
-                padding: '20px', borderRadius: '16px', border: '1.5px solid #0a0a0a',
-                background: '#0a0a0a', cursor: 'pointer', textAlign: 'left', width: '100%',
-                transition: 'opacity 0.15s',
-              }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Trophy size={22} color="#fff" />
-                </div>
-                <div>
-                  <p style={{ fontSize: '15px', fontWeight: 800, color: '#fff', margin: '0 0 2px', letterSpacing: '-0.01em' }}>Crear liga</p>
-                  <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Configura las reglas y comparte con tus amigos</p>
-                </div>
-              </button>
-
-              <button onClick={() => setView('search')} style={{
-                display: 'flex', alignItems: 'center', gap: '16px',
-                padding: '20px', borderRadius: '16px', border: '1.5px solid #e5e7eb',
-                background: '#fafafa', cursor: 'pointer', textAlign: 'left', width: '100%',
-                transition: 'all 0.15s',
-              }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Search size={22} color="#0a0a0a" />
-                </div>
-                <div>
-                  <p style={{ fontSize: '15px', fontWeight: 800, color: '#0a0a0a', margin: '0 0 2px', letterSpacing: '-0.01em' }}>Buscar liga</p>
-                  <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Encuentra una liga por nombre y únete</p>
-                </div>
-              </button>
-            </div>
-          )}
-
-          {/* CREATE */}
-          {view === 'create' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {createResult && (
-                <div style={{
-                  padding: '12px 16px', borderRadius: '12px',
-                  background: createResult.ok ? '#f0fdf4' : '#fef2f2',
-                  border: `1px solid ${createResult.ok ? '#bbf7d0' : '#fecaca'}`,
-                  fontSize: '13px', color: createResult.ok ? '#16a34a' : '#dc2626',
-                }}>
-                  {createResult.msg}
-                </div>
-              )}
-
-              <div>
-                <label style={labelStyle}>Nombre de la liga</label>
-                <input
-                  style={inputStyle} placeholder="ej. Los Cracks 2026"
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={labelStyle}>Participantes máx.</label>
-                  <input
-                    style={inputStyle} type="number" min={2} placeholder="ej. 10"
-                    value={form.max_participants}
-                    onChange={e => setForm(f => ({ ...f, max_participants: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>Cuota de entrada (€)</label>
-                  <input
-                    style={inputStyle} type="number" min={0} placeholder="ej. 50"
-                    value={form.entry_fee}
-                    onChange={e => setForm(f => ({ ...f, entry_fee: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Duración (días)</label>
-                <input
-                  style={inputStyle} type="number" min={1} placeholder="ej. 60"
-                  value={form.duration_days}
-                  onChange={e => setForm(f => ({ ...f, duration_days: e.target.value }))}
-                />
-                {endDatePreview && (
-                  <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px' }}>
-                    📅 Fecha de fin: <strong style={{ color: '#0a0a0a' }}>{endDatePreview}</strong>
-                  </p>
-                )}
-              </div>
-
-              {/* Preview card */}
-              {form.name && form.max_participants && form.entry_fee && form.duration_days && (
-                <div style={{ background: '#f8f8f8', borderRadius: '14px', padding: '16px', border: '1px solid #e5e7eb' }}>
-                  <p style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 10px' }}>Vista previa</p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '13px', color: '#6b7280' }}>Premio estimado</span>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#0a0a0a' }}>
-                      €{(parseFloat(form.entry_fee || '0') * parseInt(form.max_participants || '0')).toLocaleString('es-ES')}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '13px', color: '#6b7280' }}>Plazas</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a' }}>{form.max_participants} jugadores</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '13px', color: '#6b7280' }}>Fin de liga</span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a' }}>{endDatePreview}</span>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={handleCreate}
-                disabled={creating || !form.name || !form.max_participants || !form.entry_fee || !form.duration_days}
-                style={{
-                  width: '100%', height: '48px', borderRadius: '14px', border: 'none',
-                  background: creating || !form.name || !form.max_participants || !form.entry_fee || !form.duration_days
-                    ? '#e5e7eb' : '#0a0a0a',
-                  color: '#fff', fontSize: '14px', fontWeight: 700,
-                  cursor: creating || !form.name || !form.max_participants || !form.entry_fee || !form.duration_days
-                    ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {creating ? 'Creando...' : 'Crear liga'}
-              </button>
-            </div>
-          )}
-
-          {/* SEARCH */}
-          {view === 'search' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  style={{ ...inputStyle, flex: 1 }}
-                  placeholder="Nombre exacto de la liga..."
-                  value={searchName}
-                  onChange={e => setSearchName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                />
-                <button onClick={handleSearch} disabled={searching || !searchName.trim()} style={{
-                  height: '44px', padding: '0 20px', borderRadius: '12px', border: 'none',
-                  background: '#0a0a0a', color: '#fff', fontSize: '13px', fontWeight: 700,
-                  cursor: searching || !searchName.trim() ? 'not-allowed' : 'pointer',
-                  flexShrink: 0, opacity: searching || !searchName.trim() ? 0.5 : 1,
-                }}>
-                  {searching ? '...' : 'Buscar'}
-                </button>
-              </div>
-
-              {searchError && (
-                <div style={{ padding: '12px 16px', borderRadius: '12px', background: '#fef2f2', border: '1px solid #fecaca', fontSize: '13px', color: '#dc2626' }}>
-                  {searchError}
-                </div>
-              )}
-
-              {joinMsg && (
-                <div style={{
-                  padding: '12px 16px', borderRadius: '12px',
-                  background: joinMsg.startsWith('✓') ? '#f0fdf4' : '#fef2f2',
-                  border: `1px solid ${joinMsg.startsWith('✓') ? '#bbf7d0' : '#fecaca'}`,
-                  fontSize: '13px', color: joinMsg.startsWith('✓') ? '#16a34a' : '#dc2626',
-                }}>
-                  {joinMsg}
-                </div>
-              )}
-
-              {leagueData && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {/* Liga info */}
-                  <div style={{ background: '#0a0a0a', borderRadius: '16px', padding: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                      <div>
-                        <p style={{ fontSize: '18px', fontWeight: 900, color: '#fff', margin: '0 0 2px', letterSpacing: '-0.02em' }}>{leagueData.league.name}</p>
-                        <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
-                          {leagueData.members.length}/{leagueData.league.max_participants} jugadores · {leagueData.league.duration_days} días
-                        </p>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 2px' }}>Premio estimado</p>
-                        <p style={{ fontSize: '20px', fontWeight: 900, color: '#ff6b35', margin: 0 }}>
-                          €{(leagueData.league.entry_fee * leagueData.league.max_participants).toLocaleString('es-ES')}
-                        </p>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '16px', marginBottom: '14px' }}>
-                      <div>
-                        <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 2px' }}>Cuota</p>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: 0 }}>€{leagueData.league.entry_fee}</p>
-                      </div>
-                      <div>
-                        <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 2px' }}>Fecha fin</p>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: 0 }}>
-                          {new Date(leagueData.league.end_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </p>
-                      </div>
-                      <div>
-                        <p style={{ fontSize: '11px', color: '#6b7280', margin: '0 0 2px' }}>Días restantes</p>
-                        <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: 0 }}>
-                          {Math.max(0, Math.ceil((new Date(leagueData.league.end_date).getTime() - Date.now()) / 86400000))}d
-                        </p>
-                      </div>
-                    </div>
-                    <button onClick={() => handleJoin(leagueData.league.id)} disabled={joining} style={{
-                      width: '100%', height: '40px', borderRadius: '10px', border: 'none',
-                      background: '#ff6b35', color: '#fff', fontSize: '13px', fontWeight: 700,
-                      cursor: joining ? 'not-allowed' : 'pointer', opacity: joining ? 0.7 : 1,
-                    }}>
-                      {joining ? 'Uniéndose...' : `Unirse · €${leagueData.league.entry_fee}`}
-                    </button>
-                  </div>
-
-                  {/* Ranking */}
-                  {leagueData.members.length > 0 && (
-                    <div>
-                      <p style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 10px' }}>
-                        Ranking · {leagueData.members.length} jugadores
-                      </p>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        {leagueData.members.map((m, i) => {
-                          const isPos = (m.roi_pct ?? 0) >= 0
-                          const medals = ['🥇', '🥈', '🥉']
-                          return (
-                            <div key={m.user_id} style={{
-                              display: 'flex', alignItems: 'center', gap: '12px',
-                              padding: '12px 14px', borderRadius: '12px',
-                              background: i === 0 ? '#fffbeb' : '#fafafa',
-                              border: `1px solid ${i === 0 ? '#fde68a' : '#f0f0f0'}`,
-                            }}>
-                              <span style={{ fontSize: '16px', width: '24px', textAlign: 'center', flexShrink: 0 }}>
-                                {medals[i] ?? `${i + 1}`}
-                              </span>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a', margin: 0 }}>{m.username}</p>
-                                <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>
-                                  {(m.total_value ?? 10000).toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 })}
-                                </p>
-                              </div>
-                              <span style={{
-                                fontSize: '13px', fontWeight: 800,
-                                color: isPos ? '#16a34a' : '#ef4444',
-                                background: isPos ? '#f0fdf4' : '#fef2f2',
-                                padding: '3px 10px', borderRadius: '100px',
-                              }}>
-                                {isPos ? '+' : ''}{(m.roi_pct ?? 0).toFixed(2)}%
-                              </span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {leagueData.members.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '24px', color: '#9ca3af', fontSize: '13px' }}>
-                      Aún no hay jugadores en esta liga. ¡Sé el primero!
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -933,15 +566,11 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
   const fmt = (n: number) => n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
 
   const cryptoShares = selected && parseFloat(amount) > 0
-    ? side === 'buy'
-      ? parseFloat(amount) / selected.current_price
-      : parseFloat(amount)
+    ? side === 'buy' ? parseFloat(amount) / selected.current_price : parseFloat(amount)
     : 0
 
   const eurValue = selected && parseFloat(amount) > 0
-    ? side === 'sell'
-      ? parseFloat(amount) * selected.current_price
-      : parseFloat(amount)
+    ? side === 'sell' ? parseFloat(amount) * selected.current_price : parseFloat(amount)
     : 0
 
   async function executeCrypto() {
@@ -984,7 +613,7 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
         width: '100%', maxWidth: '680px', maxHeight: '90vh',
         overflowY: 'auto', borderRadius: '24px',
         background: '#ffffff', boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
-        margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
+        margin: '0 16px',
       }}>
         <div style={{ padding: '24px 28px', borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1008,12 +637,7 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
 
         <div style={{ padding: '20px 28px' }}>
           {toast && (
-            <div style={{
-              marginBottom: '16px', padding: '12px 16px', borderRadius: '12px',
-              background: toast.ok ? '#f0fdf4' : '#fef2f2',
-              border: `1px solid ${toast.ok ? '#bbf7d0' : '#fecaca'}`,
-              fontSize: '13px', color: toast.ok ? '#16a34a' : '#dc2626',
-            }}>
+            <div style={{ marginBottom: '16px', padding: '12px 16px', borderRadius: '12px', background: toast.ok ? '#f0fdf4' : '#fef2f2', border: `1px solid ${toast.ok ? '#bbf7d0' : '#fecaca'}`, fontSize: '13px', color: toast.ok ? '#16a34a' : '#dc2626' }}>
               {toast.msg}
             </div>
           )}
@@ -1028,27 +652,14 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                     <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>{fmt(selected.current_price)} / {selected.symbol.toUpperCase()}</p>
                   </div>
                 </div>
-                <button onClick={() => { setSelected(null); setAmount(''); setToast(null); setSide('buy') }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa' }}>
+                <button onClick={() => { setSelected(null); setAmount(''); setToast(null); setSide('buy') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa' }}>
                   <X size={18} />
                 </button>
               </div>
 
               <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e0e0e0', marginBottom: '16px' }}>
-                <button onClick={() => { setSide('buy'); setAmount(''); setToast(null) }} style={{
-                  flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
-                  fontSize: '13px', fontWeight: 700,
-                  background: side === 'buy' ? '#0a0a0a' : '#fff',
-                  color: side === 'buy' ? '#fff' : '#888',
-                  transition: 'all 0.15s',
-                }}>Comprar</button>
-                <button onClick={() => { setSide('sell'); setAmount(''); setToast(null) }} style={{
-                  flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
-                  fontSize: '13px', fontWeight: 700,
-                  background: side === 'sell' ? '#ef4444' : '#fff',
-                  color: side === 'sell' ? '#fff' : '#888',
-                  transition: 'all 0.15s',
-                }}>Vender</button>
+                <button onClick={() => { setSide('buy'); setAmount(''); setToast(null) }} style={{ flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, background: side === 'buy' ? '#0a0a0a' : '#fff', color: side === 'buy' ? '#fff' : '#888', transition: 'all 0.15s' }}>Comprar</button>
+                <button onClick={() => { setSide('sell'); setAmount(''); setToast(null) }} style={{ flex: 1, padding: '10px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, background: side === 'sell' ? '#ef4444' : '#fff', color: side === 'sell' ? '#fff' : '#888', transition: 'all 0.15s' }}>Vender</button>
               </div>
 
               <div style={{ marginBottom: '12px' }}>
@@ -1059,17 +670,9 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                   <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontWeight: 700, fontSize: '13px' }}>
                     {side === 'buy' ? '€' : selected.symbol.toUpperCase().slice(0, 4)}
                   </span>
-                  <input
-                    type="number" value={amount} min={0} placeholder="0.00"
+                  <input type="number" value={amount} min={0} placeholder="0.00"
                     onChange={e => { setAmount(e.target.value); setToast(null) }}
-                    style={{
-                      width: '100%', height: '44px', borderRadius: '12px',
-                      border: '1px solid #e0e0e0', background: '#fff',
-                      paddingLeft: side === 'buy' ? '28px' : '52px',
-                      paddingRight: '12px',
-                      fontSize: '15px', fontWeight: 700, color: '#0a0a0a',
-                      outline: 'none', boxSizing: 'border-box',
-                    }}
+                    style={{ width: '100%', height: '44px', borderRadius: '12px', border: '1px solid #e0e0e0', background: '#fff', paddingLeft: side === 'buy' ? '28px' : '52px', paddingRight: '12px', fontSize: '15px', fontWeight: 700, color: '#0a0a0a', outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -1102,29 +705,15 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              <button onClick={executeCrypto} disabled={executing || !amount || parseFloat(amount) <= 0} style={{
-                width: '100%', height: '44px', borderRadius: '12px',
-                background: executing || !amount || parseFloat(amount) <= 0
-                  ? '#e0e0e0'
-                  : side === 'buy' ? '#f97316' : '#ef4444',
-                color: '#fff', border: 'none',
-                cursor: executing || !amount || parseFloat(amount) <= 0 ? 'not-allowed' : 'pointer',
-                fontSize: '14px', fontWeight: 700, transition: 'all 0.15s',
-              }}>
-                {executing
-                  ? 'Ejecutando...'
-                  : side === 'buy'
-                    ? `Comprar ${selected.symbol.toUpperCase()}`
-                    : `Vender ${selected.symbol.toUpperCase()}`}
+              <button onClick={executeCrypto} disabled={executing || !amount || parseFloat(amount) <= 0} style={{ width: '100%', height: '44px', borderRadius: '12px', background: executing || !amount || parseFloat(amount) <= 0 ? '#e0e0e0' : side === 'buy' ? '#f97316' : '#ef4444', color: '#fff', border: 'none', cursor: executing || !amount || parseFloat(amount) <= 0 ? 'not-allowed' : 'pointer', fontSize: '14px', fontWeight: 700, transition: 'all 0.15s' }}>
+                {executing ? 'Ejecutando...' : side === 'buy' ? `Comprar ${selected.symbol.toUpperCase()}` : `Vender ${selected.symbol.toUpperCase()}`}
               </button>
             </div>
           )}
 
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} style={{ height: '64px', borderRadius: '12px', background: '#f5f5f5' }} />
-              ))}
+              {Array.from({ length: 8 }).map((_, i) => <div key={i} style={{ height: '64px', borderRadius: '12px', background: '#f5f5f5' }} />)}
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1133,17 +722,8 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                 const isSelected = selected?.id === coin.id
                 return (
                   <button key={coin.id} onClick={() => { setSelected(isSelected ? null : coin); setAmount(''); setToast(null); setSide('buy') }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '14px',
-                      padding: '12px 16px', borderRadius: '14px',
-                      border: isSelected ? '2px solid #f97316' : '1px solid #f0f0f0',
-                      background: isSelected ? '#fff8f5' : '#fff',
-                      cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
-                      width: '100%',
-                    }}>
-                    <span style={{ fontSize: '11px', color: '#ccc', fontWeight: 700, width: '20px', flexShrink: 0 }}>
-                      #{coin.market_cap_rank}
-                    </span>
+                    style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px', borderRadius: '14px', border: isSelected ? '2px solid #f97316' : '1px solid #f0f0f0', background: isSelected ? '#fff8f5' : '#fff', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s', width: '100%' }}>
+                    <span style={{ fontSize: '11px', color: '#ccc', fontWeight: 700, width: '20px', flexShrink: 0 }}>#{coin.market_cap_rank}</span>
                     <img src={coin.image} alt={coin.name} style={{ width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: 0, lineHeight: 1.2 }}>{coin.name}</p>
@@ -1151,9 +731,7 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: 0 }}>{fmt(coin.current_price)}</p>
-                      <p style={{ fontSize: '11px', fontWeight: 600, color: isPos ? '#16a34a' : '#ef4444', margin: 0 }}>
-                        {isPos ? '+' : ''}{coin.price_change_percentage_24h?.toFixed(2)}%
-                      </p>
+                      <p style={{ fontSize: '11px', fontWeight: 600, color: isPos ? '#16a34a' : '#ef4444', margin: 0 }}>{isPos ? '+' : ''}{coin.price_change_percentage_24h?.toFixed(2)}%</p>
                     </div>
                   </button>
                 )
@@ -1471,7 +1049,7 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
         width: '100%', maxWidth: '680px', maxHeight: '90vh',
         overflowY: 'auto', borderRadius: '24px',
         background: '#ffffff', boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
-        margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
+        margin: '0 16px',
       }}>
         <div style={{ padding: '24px 28px 0', borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
