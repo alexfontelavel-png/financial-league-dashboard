@@ -20,6 +20,56 @@ interface PortfolioData {
   }>
 }
 
+const TICKER_DOMAINS: Record<string, string> = {
+  AAPL: 'apple.com', MSFT: 'microsoft.com', GOOGL: 'google.com',
+  GOOG: 'google.com', AMZN: 'amazon.com', META: 'meta.com',
+  TSLA: 'tesla.com', NVDA: 'nvidia.com', AMD: 'amd.com',
+  NFLX: 'netflix.com', PYPL: 'paypal.com', INTC: 'intel.com',
+  UBER: 'uber.com', SPOT: 'spotify.com', SHOP: 'shopify.com',
+  COIN: 'coinbase.com', PLTR: 'palantir.com', SNAP: 'snap.com',
+  BABA: 'alibaba.com', DIS: 'disney.com', BA: 'boeing.com',
+  JPM: 'jpmorganchase.com', V: 'visa.com', MA: 'mastercard.com',
+  WMT: 'walmart.com', JNJ: 'jnj.com', PG: 'pg.com',
+  KO: 'coca-cola.com', PEP: 'pepsico.com', MCD: 'mcdonalds.com',
+  SBUX: 'starbucks.com', NKE: 'nike.com', ADBE: 'adobe.com',
+  CRM: 'salesforce.com', ORCL: 'oracle.com', IBM: 'ibm.com',
+  QCOM: 'qualcomm.com', TXN: 'ti.com', AVGO: 'broadcom.com',
+  ARM: 'arm.com', RIVN: 'rivian.com', ABNB: 'airbnb.com',
+  LYFT: 'lyft.com', HOOD: 'robinhood.com', SOFI: 'sofi.com',
+  RBLX: 'roblox.com', TWLO: 'twilio.com', ZM: 'zoom.us',
+  NET: 'cloudflare.com', SNOW: 'snowflake.com', DDOG: 'datadoghq.com',
+  MDB: 'mongodb.com', DOCN: 'digitalocean.com', AMGN: 'amgen.com',
+  GILD: 'gilead.com', BMY: 'bms.com', PFE: 'pfizer.com',
+  MRNA: 'modernatx.com', LLY: 'lilly.com', UNH: 'unitedhealthgroup.com',
+  GS: 'goldmansachs.com', MS: 'morganstanley.com', BAC: 'bankofamerica.com',
+  WFC: 'wellsfargo.com', C: 'citi.com', XOM: 'exxonmobil.com',
+  CVX: 'chevron.com', CSCO: 'cisco.com', AMAT: 'appliedmaterials.com',
+}
+
+function PositionLogo({ ticker }: { ticker: string }) {
+  const [imgError, setImgError] = useState(false)
+  const domain  = TICKER_DOMAINS[ticker.toUpperCase()]
+  const logoUrl = domain ? `https://logo.clearbit.com/${domain}` : null
+
+  if (!imgError && logoUrl) {
+    return (
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl overflow-hidden bg-white border border-border">
+        <img
+          src={logoUrl} alt={ticker}
+          className="size-7 object-contain"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+      {ticker.slice(0, 2)}
+    </div>
+  )
+}
+
 function AreaSparkline({ data, positive }: { data: number[]; positive: boolean }) {
   if (data.length < 2) return null
   const width  = 520
@@ -92,12 +142,10 @@ export function PortfolioCard() {
       flexDirection: 'column',
       gap: '0',
     }}>
-      {/* Label */}
       <p style={{ fontSize: '12px', fontWeight: 500, color: '#9ca3af', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px' }}>
         Total Portfolio Value
       </p>
 
-      {/* Valor principal */}
       {loading ? (
         <div style={{ height: '48px', width: '160px', background: '#f5f5f5', borderRadius: '8px', marginBottom: '8px' }} />
       ) : (
@@ -106,7 +154,6 @@ export function PortfolioCard() {
         </p>
       )}
 
-      {/* Badge ROI */}
       {!loading && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
           <span style={{
@@ -125,15 +172,12 @@ export function PortfolioCard() {
         </div>
       )}
 
-      {/* Sparkline */}
       <div style={{ marginLeft: '-4px', marginRight: '-4px', marginBottom: '20px' }}>
         <AreaSparkline data={sparkData} positive={isPos} />
       </div>
 
-      {/* Divider */}
       <div style={{ height: '1px', background: '#f5f5f5', marginBottom: '20px' }} />
 
-      {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: investedValue > 0 ? '20px' : '0' }}>
         <div style={{ background: '#fafafa', borderRadius: '14px', padding: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
@@ -142,7 +186,7 @@ export function PortfolioCard() {
           </div>
           {loading
             ? <div style={{ height: '24px', width: '80px', background: '#ebebeb', borderRadius: '6px' }} />
-            : <p style={{ fontSize: '18px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.01em' }}>{formatEuro(investedValue)}</p>
+            : <p style={{ fontSize: '18px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.01em', margin: 0 }}>{formatEuro(investedValue)}</p>
           }
         </div>
         <div style={{ background: '#fafafa', borderRadius: '14px', padding: '16px' }}>
@@ -152,12 +196,11 @@ export function PortfolioCard() {
           </div>
           {loading
             ? <div style={{ height: '24px', width: '80px', background: '#ebebeb', borderRadius: '6px' }} />
-            : <p style={{ fontSize: '18px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.01em' }}>{formatEuro(cashBalance)}</p>
+            : <p style={{ fontSize: '18px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.01em', margin: 0 }}>{formatEuro(cashBalance)}</p>
           }
         </div>
       </div>
 
-      {/* Posiciones */}
       {!loading && data && data.positions.length > 0 && (
         <div>
           <div style={{ height: '1px', background: '#f5f5f5', marginBottom: '16px' }} />
@@ -168,21 +211,15 @@ export function PortfolioCard() {
             {data.positions.map(pos => (
               <div key={pos.ticker} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    width: '32px', height: '32px', borderRadius: '8px',
-                    background: '#f5f5f5', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#0a0a0a'
-                  }}>
-                    {pos.ticker.slice(0, 2)}
-                  </div>
+                  <PositionLogo ticker={pos.ticker} />
                   <div>
-                    <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a', lineHeight: 1.2 }}>{pos.ticker}</p>
-                    <p style={{ fontSize: '11px', color: '#9ca3af', lineHeight: 1.2 }}>{pos.shares.toFixed(2)} acc.</p>
+                    <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a', lineHeight: 1.2, margin: 0 }}>{pos.ticker}</p>
+                    <p style={{ fontSize: '11px', color: '#9ca3af', lineHeight: 1.2, margin: 0 }}>{pos.shares.toFixed(2)} acc.</p>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a' }}>{formatEuro(pos.current_value)}</p>
-                  <p style={{ fontSize: '11px', fontWeight: 600, color: pos.pnl_pct >= 0 ? '#16a34a' : '#ef4444' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a', margin: 0 }}>{formatEuro(pos.current_value)}</p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: pos.pnl_pct >= 0 ? '#16a34a' : '#ef4444', margin: 0 }}>
                     {pos.pnl_pct >= 0 ? '+' : ''}{pos.pnl_pct.toFixed(2)}%
                   </p>
                 </div>
