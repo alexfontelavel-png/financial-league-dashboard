@@ -56,24 +56,35 @@ function PositionLogo({ ticker }: { ticker: string }) {
 
   if (!imgError && logoUrl) {
     return (
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-white border border-border">
-        <img
-          src={logoUrl} alt={ticker}
-          className="size-5 object-contain"
-          onError={() => setImgError(true)}
-        />
+      <div style={{
+        width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+        background: '#fff', border: '1px solid #f0f0f0',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden',
+      }}>
+        <img src={logoUrl} alt={ticker}
+          style={{ width: '22px', height: '22px', objectFit: 'contain' }}
+          onError={() => setImgError(true)} />
       </div>
     )
   }
 
   return (
-    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+    <div style={{
+      width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+      background: '#f0f0f0', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#0a0a0a',
+    }}>
       {ticker.slice(0, 2)}
     </div>
   )
 }
 
-function AreaSparkline({ data, positive, filter }: { data: number[]; positive: boolean; filter: 'day' | 'week' }) {
+function AreaSparkline({ data, positive, filter }: {
+  data: number[]
+  positive: boolean
+  filter: 'day' | 'week'
+}) {
   if (data.length < 2) return null
   const width  = 520
   const height = 80
@@ -88,9 +99,8 @@ function AreaSparkline({ data, positive, filter }: { data: number[]; positive: b
   })
   const linePath = points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`).join(' ')
   const areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`
-  const color = positive ? '#16a34a' : '#ef4444'
+  const color    = positive ? '#16a34a' : '#ef4444'
 
-  // Labels eje X
   const labels = filter === 'day'
     ? Array.from({ length: data.length }, (_, i) => {
         const d = new Date()
@@ -98,14 +108,11 @@ function AreaSparkline({ data, positive, filter }: { data: number[]; positive: b
         return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
       })
     : Array.from({ length: data.length }, (_, i) => {
-        const d = new Date()
-        d.setDate(d.getDate() - (data.length - 1 - i) * 7)
-        return `S${data.length - i}`
+        const weekNum = data.length - i
+        return `S-${weekNum}`
       })
 
-  const labelIndices = data.length <= 4
-    ? data.map((_, i) => i)
-    : [0, Math.floor((data.length - 1) / 2), data.length - 1]
+  const labelIndices = [0, Math.floor((data.length - 1) / 2), data.length - 1]
 
   return (
     <div>
@@ -119,7 +126,7 @@ function AreaSparkline({ data, positive, filter }: { data: number[]; positive: b
         <path d={areaPath} fill="url(#sparkFill)" />
         <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', paddingLeft: '2px', paddingRight: '2px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
         {labelIndices.map(i => (
           <span key={i} style={{ fontSize: '10px', color: '#9ca3af' }}>{labels[i]}</span>
         ))}
@@ -129,9 +136,9 @@ function AreaSparkline({ data, positive, filter }: { data: number[]; positive: b
 }
 
 export function PortfolioCard() {
-  const [data, setData]         = useState<PortfolioData | null>(null)
-  const [loading, setLoading]   = useState(true)
-  const [filter, setFilter]     = useState<'day' | 'week'>('day')
+  const [data, setData]       = useState<PortfolioData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter]   = useState<'day' | 'week'>('day')
 
   const fetchData = useCallback(async () => {
     try {
@@ -155,26 +162,12 @@ export function PortfolioCard() {
   const roiAbs        = totalValue - 10000
   const isPos         = roiPct >= 0
 
-  // Datos del gráfico según filtro
-  const sparkData = (() => {
-    if (filter === 'day') {
-      // 10 puntos diarios simulados entre 10000 y totalValue
-      return Array.from({ length: 10 }, (_, i) =>
-        10000 + (roiAbs * (i + 1) / 10)
-      )
-    } else {
-      // 6 puntos semanales
-      return Array.from({ length: 6 }, (_, i) =>
-        10000 + (roiAbs * (i + 1) / 6)
-      )
-    }
-  })()
+  const sparkData = filter === 'day'
+    ? Array.from({ length: 10 }, (_, i) => 10000 + (roiAbs * (i + 1) / 10))
+    : Array.from({ length: 6 },  (_, i) => 10000 + (roiAbs * (i + 1) / 6))
 
-  // Top 6 posiciones por valor actual (mayor peso primero)
   const top6 = data
-    ? [...data.positions]
-        .sort((a, b) => b.current_value - a.current_value)
-        .slice(0, 6)
+    ? [...data.positions].sort((a, b) => b.current_value - a.current_value).slice(0, 6)
     : []
 
   return (
@@ -186,7 +179,6 @@ export function PortfolioCard() {
       padding: '28px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '0',
     }}>
       <p style={{ fontSize: '12px', fontWeight: 500, color: '#9ca3af', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px' }}>
         Total Portfolio Value
@@ -201,7 +193,7 @@ export function PortfolioCard() {
       )}
 
       {!loading && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: '3px',
             background: isPos ? '#f0fdf4' : '#fef2f2',
@@ -218,20 +210,16 @@ export function PortfolioCard() {
         </div>
       )}
 
-      {/* Filtro día / semana */}
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+      {/* Filtro */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
         {(['day', 'week'] as const).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            style={{
-              padding: '4px 12px', borderRadius: '100px', border: 'none', cursor: 'pointer',
-              fontSize: '11px', fontWeight: 700,
-              background: filter === f ? '#0a0a0a' : '#f5f5f5',
-              color: filter === f ? '#fff' : '#9ca3af',
-              transition: 'all 0.15s',
-            }}
-          >
+          <button key={f} onClick={() => setFilter(f)} style={{
+            padding: '4px 14px', borderRadius: '100px', border: 'none', cursor: 'pointer',
+            fontSize: '11px', fontWeight: 700,
+            background: filter === f ? '#0a0a0a' : '#f5f5f5',
+            color: filter === f ? '#fff' : '#9ca3af',
+            transition: 'all 0.15s',
+          }}>
             {f === 'day' ? '10D' : '6W'}
           </button>
         ))}
@@ -243,6 +231,7 @@ export function PortfolioCard() {
 
       <div style={{ height: '1px', background: '#f5f5f5', marginBottom: '20px' }} />
 
+      {/* Invested / Cash */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: top6.length > 0 ? '20px' : '0' }}>
         <div style={{ background: '#fafafa', borderRadius: '14px', padding: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
@@ -266,27 +255,31 @@ export function PortfolioCard() {
         </div>
       </div>
 
+      {/* Top 6 posiciones */}
       {!loading && top6.length > 0 && (
         <div>
           <div style={{ height: '1px', background: '#f5f5f5', marginBottom: '16px' }} />
-          <p style={{ fontSize: '11px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+          <p style={{ fontSize: '11px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
             Top 6 posiciones activas
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {top6.map(pos => (
               <div key={pos.ticker} style={{
                 display: 'flex', alignItems: 'center', gap: '8px',
-                background: '#fafafa', borderRadius: '12px', padding: '10px 12px',
-                border: '1px solid #f0f0f0',
+                background: '#fafafa', borderRadius: '12px',
+                padding: '10px', border: '1px solid #f0f0f0',
+                overflow: 'hidden',
               }}>
                 <PositionLogo ticker={pos.ticker} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a', margin: 0, lineHeight: 1.2 }}>{pos.ticker}</p>
-                  <p style={{ fontSize: '11px', fontWeight: 700, color: pos.pnl_pct >= 0 ? '#16a34a' : '#ef4444', margin: 0 }}>
+                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                  <p style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a', margin: 0, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {pos.ticker}
+                  </p>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: pos.pnl_pct >= 0 ? '#16a34a' : '#ef4444', margin: 0, lineHeight: 1.3 }}>
                     {pos.pnl_pct >= 0 ? '+' : ''}{pos.pnl_pct.toFixed(2)}%
                   </p>
                 </div>
-                <p style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a', margin: 0, flexShrink: 0 }}>
+                <p style={{ fontSize: '11px', fontWeight: 700, color: '#0a0a0a', margin: 0, flexShrink: 0, whiteSpace: 'nowrap' }}>
                   {formatEuro(pos.current_value)}
                 </p>
               </div>
