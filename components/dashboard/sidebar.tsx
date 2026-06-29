@@ -37,6 +37,66 @@ const LEAGUES = [
   },
 ]
 
+const TICKER_DOMAINS: Record<string, string> = {
+  AAPL: 'apple.com', MSFT: 'microsoft.com', GOOGL: 'google.com',
+  GOOG: 'google.com', AMZN: 'amazon.com', META: 'meta.com',
+  TSLA: 'tesla.com', NVDA: 'nvidia.com', AMD: 'amd.com',
+  NFLX: 'netflix.com', PYPL: 'paypal.com', INTC: 'intel.com',
+  UBER: 'uber.com', SPOT: 'spotify.com', SHOP: 'shopify.com',
+  COIN: 'coinbase.com', PLTR: 'palantir.com', SNAP: 'snap.com',
+  BABA: 'alibaba.com', DIS: 'disney.com', BA: 'boeing.com',
+  JPM: 'jpmorganchase.com', V: 'visa.com', MA: 'mastercard.com',
+  WMT: 'walmart.com', JNJ: 'jnj.com', PG: 'pg.com',
+  KO: 'coca-cola.com', PEP: 'pepsico.com', MCD: 'mcdonalds.com',
+  SBUX: 'starbucks.com', NKE: 'nike.com', ADBE: 'adobe.com',
+  CRM: 'salesforce.com', ORCL: 'oracle.com', IBM: 'ibm.com',
+  QCOM: 'qualcomm.com', TXN: 'ti.com', AVGO: 'broadcom.com',
+  ARM: 'arm.com', RIVN: 'rivian.com', ABNB: 'airbnb.com',
+  LYFT: 'lyft.com', HOOD: 'robinhood.com', SOFI: 'sofi.com',
+  RBLX: 'roblox.com', TWLO: 'twilio.com', ZM: 'zoom.us',
+  NET: 'cloudflare.com', SNOW: 'snowflake.com', DDOG: 'datadoghq.com',
+  MDB: 'mongodb.com', DOCN: 'digitalocean.com', AMGN: 'amgen.com',
+  GILD: 'gilead.com', BMY: 'bms.com', PFE: 'pfizer.com',
+  MRNA: 'modernatx.com', LLY: 'lilly.com', UNH: 'unitedhealthgroup.com',
+  GS: 'goldmansachs.com', MS: 'morganstanley.com', BAC: 'bankofamerica.com',
+  WFC: 'wellsfargo.com', C: 'citi.com', XOM: 'exxonmobil.com',
+  CVX: 'chevron.com', CSCO: 'cisco.com', AMAT: 'appliedmaterials.com',
+}
+
+function PositionLogo({ ticker }: { ticker: string }) {
+  const [imgError, setImgError] = useState(false)
+  const domain  = TICKER_DOMAINS[ticker.toUpperCase()]
+  const logoUrl = domain ? `https://logo.clearbit.com/${domain}` : null
+
+  if (!imgError && logoUrl) {
+    return (
+      <div style={{
+        width: '40px', height: '40px', borderRadius: '10px',
+        background: '#fff', border: '1px solid #f0f0f0',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, overflow: 'hidden',
+      }}>
+        <img
+          src={logoUrl} alt={ticker}
+          style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+          onError={() => setImgError(true)}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      width: '40px', height: '40px', borderRadius: '10px',
+      background: '#f5f5f5', flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: '12px', fontWeight: 700, color: '#0a0a0a',
+    }}>
+      {ticker.slice(0, 2)}
+    </div>
+  )
+}
+
 function useEscapeKey(onClose: () => void) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -549,16 +609,12 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
-      <div
-        onClick={e => e.stopPropagation()}
-        className="modal-content"
-        style={{
-          width: '100%', maxWidth: '680px', maxHeight: '90vh',
-          overflowY: 'auto', borderRadius: '24px',
-          background: '#ffffff', boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
-          margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
-        }}
-      >
+      <div onClick={e => e.stopPropagation()} className="modal-content" style={{
+        width: '100%', maxWidth: '680px', maxHeight: '90vh',
+        overflowY: 'auto', borderRadius: '24px',
+        background: '#ffffff', boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
+        margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}>
         <div style={{ padding: '24px 28px 0', borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
@@ -673,9 +729,7 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
                   const isGain = pos.pnl_pct >= 0
                   return (
                     <div key={pos.ticker} style={{ border: '1px solid #f0f0f0', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#0a0a0a', flexShrink: 0 }}>
-                        {pos.ticker.slice(0, 2)}
-                      </div>
+                      <PositionLogo ticker={pos.ticker} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
