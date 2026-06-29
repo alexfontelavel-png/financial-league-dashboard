@@ -8,14 +8,12 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 })
 
-// Tickers de crypto conocidos (amplía la lista según necesites)
 const CRYPTO_TICKERS = new Set([
   'BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'AVAX',
   'DOT', 'MATIC', 'SHIB', 'LTC', 'UNI', 'LINK', 'ATOM', 'XLM',
   'ALGO', 'VET', 'ICP', 'FIL', 'APT', 'ARB', 'OP', 'SUI', 'SEI',
 ])
 
-// Mapeo ticker → id de CoinGecko
 const TICKER_TO_COINGECKO_ID: Record<string, string> = {
   BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
   XRP: 'ripple', ADA: 'cardano', DOGE: 'dogecoin', AVAX: 'avalanche-2',
@@ -32,15 +30,17 @@ function isCrypto(ticker: string): boolean {
 async function getCryptoPrice(ticker: string): Promise<number | null> {
   const coinId = TICKER_TO_COINGECKO_ID[ticker.toUpperCase()]
   if (!coinId) return null
-
-  const res = await fetch(
-    `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=eur`,
-    { next: { revalidate: 60 } }
-  )
-  if (!res.ok) return null
-
-  const data = await res.json()
-  return data[coinId]?.eur ?? null
+  try {
+    const res = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=eur`,
+      { cache: 'no-store' }
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    return data[coinId]?.eur ?? null
+  } catch {
+    return null
+  }
 }
 
 async function getPositionPrice(ticker: string): Promise<number | null> {
@@ -54,6 +54,8 @@ async function getPositionPrice(ticker: string): Promise<number | null> {
     return null
   }
 }
+
+const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 export async function GET(req: NextRequest) {
   const session = await auth.api.getSession({ headers: req.headers })
@@ -84,25 +86,26 @@ export async function GET(req: NextRequest) {
       [portfolio.id]
     )
 
-    // Actualizar precios — crypto vía CoinGecko, acciones vía Polygon
-    let updatedPositions = positions
-    if (positions.length > 0) {
-      updatedPositions = await Promise.all(
-        positions.map(async (pos) => {
-          const price = await getPositionPrice(pos.ticker)
+    // Actualizar precios secuencialmente para respetar límite de Polygon (5 req/min)
+    const updatedPositions = []
+    for (const pos of positions) {
+      const price = await getPositionPrice(pos.ticker)
 
-          if (price !== null) {
-            await client.query(
-              'UPDATE positions SET current_price = $1, updated_at = NOW() WHERE id = $2',
-              [price, pos.id]
-            )
-            return { ...pos, current_price: price }
-          }
+      if (price !== null) {
+        await client.query(
+          'UPDATE positions SET current_price = $1, updated_at = NOW() WHERE id = $2',
+          [price, pos.id]
+        )
+        updatedPositions.push({ ...pos, current_price: price })
+      } else {
+        updatedPositions.push(pos)
+      }
 
-          // Si falla la API, conservar el precio que hay en BD
-          return pos
-        })
-      )
+      // 250ms entre peticiones — crypto va a CoinGecko así que no cuenta
+      // pero lo aplicamos a todo para no saturar ninguna API
+      if (!isCrypto(pos.ticker)) {
+        await delay(250)
+      }
     }
 
     // Calcular valor total
@@ -124,19 +127,19 @@ export async function GET(req: NextRequest) {
     )
 
     return NextResponse.json({
-      cash_balance: parseFloat(portfolio.cash_balance),
-      total_value: totalValue,
+      cash_balance:   parseFloat(portfolio.cash_balance),
+      total_value:    totalValue,
       invested_value: investedValue,
-      roi_pct: ((totalValue - 10000) / 10000) * 100,
+      roi_pct:        ((totalValue - 10000) / 10000) * 100,
       positions: updatedPositions.map(pos => ({
-        ticker: pos.ticker,
-        company_name: pos.company_name,
-        shares: parseFloat(pos.shares),
+        ticker:        pos.ticker,
+        company_name:  pos.company_name,
+        shares:        parseFloat(pos.shares),
         avg_buy_price: parseFloat(pos.avg_buy_price),
         current_price: parseFloat(pos.current_price),
         current_value: parseFloat(pos.shares) * parseFloat(pos.current_price),
-        pnl: (parseFloat(pos.current_price) - parseFloat(pos.avg_buy_price)) * parseFloat(pos.shares),
-        pnl_pct: ((parseFloat(pos.current_price) - parseFloat(pos.avg_buy_price)) / parseFloat(pos.avg_buy_price)) * 100,
+        pnl:           (parseFloat(pos.current_price) - parseFloat(pos.avg_buy_price)) * parseFloat(pos.shares),
+        pnl_pct:       ((parseFloat(pos.current_price) - parseFloat(pos.avg_buy_price)) / parseFloat(pos.avg_buy_price)) * 100,
       })),
       transactions,
     })
