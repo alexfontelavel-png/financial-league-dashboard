@@ -2,6 +2,7 @@
 import { ArrowUpRight, ArrowDownRight, Wallet, Coins } from 'lucide-react'
 import { useEffect, useState, useCallback } from 'react'
 import { formatEuro } from '@/lib/format'
+import { CRYPTO_LOGOS } from '@/lib/crypto-logos'
 
 interface PortfolioData {
   cash_balance:   number
@@ -48,8 +49,10 @@ const TICKER_DOMAINS: Record<string, string> = {
 
 function PositionLogo({ ticker }: { ticker: string }) {
   const [imgError, setImgError] = useState(false)
-  const domain  = TICKER_DOMAINS[ticker.toUpperCase()]
-  const logoUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null
+  const upper      = ticker.toUpperCase()
+  const cryptoLogo = CRYPTO_LOGOS[upper]
+  const domain     = TICKER_DOMAINS[upper]
+  const logoUrl    = cryptoLogo ?? (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null)
 
   if (!imgError && logoUrl) {
     return (
@@ -214,7 +217,7 @@ export function PortfolioCard() {
                   <PositionLogo ticker={pos.ticker} />
                   <div>
                     <p style={{ fontSize: '13px', fontWeight: 700, color: '#0a0a0a', lineHeight: 1.2, margin: 0 }}>{pos.ticker}</p>
-                    <p style={{ fontSize: '11px', color: '#9ca3af', lineHeight: 1.2, margin: 0 }}>{pos.shares.toFixed(2)} acc.</p>
+                    <p style={{ fontSize: '11px', color: '#9ca3af', lineHeight: 1.2, margin: 0 }}>{pos.shares.toFixed(4)} acc.</p>
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
