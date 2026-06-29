@@ -36,7 +36,7 @@ const TICKER_DOMAINS: Record<string, string> = {
 function TickerLogo({ ticker, name, size = 'sm' }: { ticker: string; name: string; size?: 'sm' | 'lg' }) {
   const [imgError, setImgError] = useState(false)
   const domain = TICKER_DOMAINS[ticker.toUpperCase()]
-  const logoUrl = domain ? `https://logo.clearbit.com/${domain}` : null
+  const logoUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null
   const dim = size === 'lg'
     ? { outer: '48px', inner: '32px', radius: '12px' }
     : { outer: '32px', inner: '20px', radius: '8px' }
