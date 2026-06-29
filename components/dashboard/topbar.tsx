@@ -1,20 +1,10 @@
 'use client'
 import { Search, Bell, ChevronDown, X, Plus, Minus, Check } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { authClient } from '@/lib/auth-client'
 
-interface SearchResult {
-  ticker: string
-  name: string
-  exchange: string
-}
-
-interface Quote {
-  ticker: string
-  name: string
-  price: number
-  change: number
-}
+interface SearchResult { ticker: string; name: string; exchange: string }
+interface Quote { ticker: string; name: string; price: number; change: number }
 
 const TICKER_DOMAINS: Record<string, string> = {
   AAPL: 'apple.com', MSFT: 'microsoft.com', GOOGL: 'google.com',
@@ -47,7 +37,9 @@ function TickerLogo({ ticker, name, size = 'sm' }: { ticker: string; name: strin
   const [imgError, setImgError] = useState(false)
   const domain = TICKER_DOMAINS[ticker.toUpperCase()]
   const logoUrl = domain ? `https://logo.clearbit.com/${domain}` : null
-  const dim = size === 'lg' ? { outer: '48px', inner: '32px', radius: '12px' } : { outer: '32px', inner: '20px', radius: '8px' }
+  const dim = size === 'lg'
+    ? { outer: '48px', inner: '32px', radius: '12px' }
+    : { outer: '32px', inner: '20px', radius: '8px' }
   const fontSize = size === 'lg' ? '14px' : '11px'
 
   if (!imgError && logoUrl) {
@@ -58,12 +50,9 @@ function TickerLogo({ ticker, name, size = 'sm' }: { ticker: string; name: strin
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, overflow: 'hidden',
       }}>
-        <img
-          src={logoUrl}
-          alt={name}
+        <img src={logoUrl} alt={name}
           style={{ width: dim.inner, height: dim.inner, objectFit: 'contain' }}
-          onError={() => setImgError(true)}
-        />
+          onError={() => setImgError(true)} />
       </div>
     )
   }
@@ -94,6 +83,18 @@ export function Topbar() {
   const userName    = session?.user?.name ?? 'Trader'
   const userInitial = userName.charAt(0).toUpperCase()
 
+  const closeAll = useCallback(() => {
+    setSelected(null); setShowBuy(false)
+    setShares(1); setAmount(''); setToast(null); setQuery('')
+  }, [])
+
+  // Escape para cerrar modal
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') closeAll() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [closeAll])
+
   useEffect(() => {
     if (query.length < 1) { setResults([]); return }
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -108,13 +109,9 @@ export function Topbar() {
   }, [query])
 
   async function selectTicker(r: SearchResult) {
-    setQuery(r.ticker)
-    setResults([])
-    setQuoteLoading(true)
-    setShowBuy(false)
-    setShares(1)
-    setAmount('')
-    setToast(null)
+    setQuery(r.ticker); setResults([])
+    setQuoteLoading(true); setShowBuy(false)
+    setShares(1); setAmount(''); setToast(null)
     try {
       const res = await fetch(`/api/quote?ticker=${r.ticker}`)
       if (res.ok) {
@@ -127,24 +124,12 @@ export function Topbar() {
     setQuoteLoading(false)
   }
 
-  function closeAll() {
-    setSelected(null)
-    setShowBuy(false)
-    setShares(1)
-    setAmount('')
-    setToast(null)
-    setQuery('')
-  }
-
   async function executeTrade() {
     if (!selected) return
-    setTradeLoading(true)
-    setToast(null)
-
+    setTradeLoading(true); setToast(null)
     const body = mode === 'shares'
       ? { ticker: selected.ticker, type: 'buy', shares }
       : { ticker: selected.ticker, type: 'buy', shares: parseFloat(amount) / selected.price }
-
     try {
       const res = await fetch('/api/trade', {
         method: 'POST',
@@ -152,12 +137,8 @@ export function Topbar() {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-
       if (data.success) {
-        setToast({
-          ok: true,
-          msg: `✓ Compra ejecutada: ${Number(data.shares).toFixed(4)} acc. de ${selected.ticker} a $${Number(data.price).toFixed(2)} · Cash restante: €${Number(data.cashAfter).toFixed(2)}`,
-        })
+        setToast({ ok: true, msg: `✓ Compra ejecutada: ${Number(data.shares).toFixed(4)} acc. de ${selected.ticker} a $${Number(data.price).toFixed(2)} · Cash restante: €${Number(data.cashAfter).toFixed(2)}` })
         window.dispatchEvent(new Event('portfolio-updated'))
         setTimeout(() => closeAll(), 2500)
       } else {
@@ -170,10 +151,7 @@ export function Topbar() {
   }
 
   const totalByShares  = selected ? shares * selected.price : 0
-  const sharesByAmount = selected && parseFloat(amount) > 0
-    ? parseFloat(amount) / selected.price
-    : 0
-
+  const sharesByAmount = selected && parseFloat(amount) > 0 ? parseFloat(amount) / selected.price : 0
   const canBuy = mode === 'shares'
     ? shares > 0 && selected && selected.price > 0
     : parseFloat(amount) > 0 && selected && selected.price > 0
@@ -182,31 +160,29 @@ export function Topbar() {
     <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-sm text-muted-foreground">Welcome back, trader</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-          Good morning, {userName}
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Good morning, {userName}</h1>
       </div>
+
       <div className="flex items-center gap-3">
         {/* Buscador */}
         <div className="relative hidden sm:block">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <input
-            type="text"
-            value={query}
+            type="text" value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search stocks, leagues..."
             aria-label="Search"
-            className="h-10 w-64 rounded-xl border border-border bg-card pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40"
+            className="h-10 w-64 rounded-xl border border-border bg-card pl-9 pr-8 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 transition-shadow"
           />
           {query && (
             <button onClick={() => { setQuery(''); setResults([]); setSelected(null) }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
               <X className="size-3.5" />
             </button>
           )}
           {(results.length > 0 || loading) && (
-            <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-xl border border-border bg-card shadow-lg overflow-hidden">
-              {loading && <p className="px-4 py-3 text-xs text-muted-foreground">Buscando...</p>}
+            <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-xl border border-border bg-card shadow-lg overflow-hidden dropdown-anim">
+              {loading && <p className="px-4 py-3 text-xs text-muted-foreground animate-pulse">Buscando...</p>}
               {results.map(r => (
                 <button key={r.ticker} onMouseDown={() => selectTicker(r)}
                   className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-accent transition-colors border-b border-border last:border-0">
@@ -241,12 +217,12 @@ export function Topbar() {
 
       {/* Modal cotización + compra */}
       {(selected || quoteLoading) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop"
           onClick={closeAll}>
-          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl"
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl modal-content"
             onClick={e => e.stopPropagation()}>
             {quoteLoading ? (
-              <p className="text-center text-sm text-muted-foreground">Cargando cotización...</p>
+              <p className="text-center text-sm text-muted-foreground animate-pulse">Cargando cotización...</p>
             ) : selected && (
               <>
                 <div className="flex items-start justify-between mb-4">
@@ -257,7 +233,7 @@ export function Topbar() {
                       <p className="text-xs text-muted-foreground">{selected.name}</p>
                     </div>
                   </div>
-                  <button onClick={closeAll} className="text-muted-foreground hover:text-foreground">
+                  <button onClick={closeAll} className="text-muted-foreground hover:text-foreground transition-colors">
                     <X className="size-5" />
                   </button>
                 </div>
@@ -269,15 +245,12 @@ export function Topbar() {
                   <p className={`text-sm font-semibold mt-0.5 ${selected.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {selected.change >= 0 ? '+' : ''}{selected.change.toFixed(2)}% hoy
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Precio de cierre del día anterior vía Polygon.io
-                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Precio de cierre del día anterior vía Polygon.io</p>
                 </div>
 
                 {!showBuy ? (
-                  <button
-                    className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-                    onClick={() => setShowBuy(true)}>
+                  <button onClick={() => setShowBuy(true)}
+                    className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
                     Comprar
                   </button>
                 ) : (
@@ -303,7 +276,7 @@ export function Topbar() {
                           </button>
                           <input type="number" value={shares} min={1}
                             onChange={e => setShares(Math.max(1, parseInt(e.target.value) || 1))}
-                            className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-center text-sm font-bold text-foreground outline-none focus:ring-2 focus:ring-ring/40" />
+                            className="flex-1 h-9 rounded-xl border border-border bg-background px-3 text-center text-sm font-bold text-foreground outline-none" />
                           <button onClick={() => setShares(s => s + 1)}
                             className="flex size-9 items-center justify-center rounded-xl border border-border hover:bg-accent transition-colors">
                             <Plus className="size-4" />
@@ -329,7 +302,7 @@ export function Topbar() {
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">€</span>
                           <input type="number" value={amount} min={0} placeholder="0.00"
                             onChange={e => setAmount(e.target.value)}
-                            className="w-full h-10 rounded-xl border border-border bg-background pl-7 pr-3 text-sm font-bold text-foreground outline-none focus:ring-2 focus:ring-ring/40" />
+                            className="w-full h-10 rounded-xl border border-border bg-background pl-7 pr-3 text-sm font-bold text-foreground outline-none" />
                         </div>
                         {parseFloat(amount) > 0 && selected.price > 0 && (
                           <div className="mt-3 rounded-xl bg-muted px-4 py-3">
@@ -357,9 +330,7 @@ export function Topbar() {
                         className="flex-1 rounded-xl border border-border py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent transition-colors">
                         Cancelar
                       </button>
-                      <button
-                        onClick={executeTrade}
-                        disabled={!canBuy || tradeLoading}
+                      <button onClick={executeTrade} disabled={!canBuy || tradeLoading}
                         className="flex-1 rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center justify-center gap-1.5">
                         {tradeLoading ? 'Ejecutando...' : toast?.ok ? <><Check className="size-3.5" />Comprado</> : 'Confirmar compra'}
                       </button>
