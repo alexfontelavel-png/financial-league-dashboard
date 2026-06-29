@@ -293,8 +293,9 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
   const [coins, setCoins]         = useState<CryptoCoin[]>([])
   const [loading, setLoading]     = useState(true)
   const [selected, setSelected]   = useState<CryptoCoin | null>(null)
+  const [side, setSide]           = useState<'buy' | 'sell'>('buy')
   const [amount, setAmount]       = useState('')
-  const [buying, setBuying]       = useState(false)
+  const [executing, setExecuting] = useState(false)
   const [toast, setToast]         = useState<{ ok: boolean; msg: string } | null>(null)
   const [portfolio, setPortfolio] = useState<{ cash_balance: number } | null>(null)
 
@@ -309,29 +310,45 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
       .catch(() => {})
   }, [])
 
-  const fmt    = (n: number) => n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
-  const shares = selected && parseFloat(amount) > 0 ? parseFloat(amount) / selected.current_price : 0
+  const fmt = (n: number) => n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
 
-  async function buyCrypto() {
+  // Buy: amount en EUR → shares = amount / price
+  // Sell: amount en unidades de crypto → shares = amount
+  const cryptoShares = selected && parseFloat(amount) > 0
+    ? side === 'buy'
+      ? parseFloat(amount) / selected.current_price
+      : parseFloat(amount)
+    : 0
+
+  const eurValue = selected && parseFloat(amount) > 0
+    ? side === 'sell'
+      ? parseFloat(amount) * selected.current_price
+      : parseFloat(amount)
+    : 0
+
+  async function executeCrypto() {
     if (!selected || !amount || parseFloat(amount) <= 0) return
-    setBuying(true); setToast(null)
+    setExecuting(true); setToast(null)
     try {
       const res = await fetch('/api/trade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ticker: selected.symbol.toUpperCase(),
-          type: 'buy',
-          shares,
+          type: side,
+          shares: cryptoShares,
           price_override: selected.current_price,
           company_name: selected.name,
         }),
       })
       const data = await res.json()
       if (data.success) {
-        setToast({ ok: true, msg: `✓ Compra ejecutada: ${shares.toFixed(6)} ${selected.symbol.toUpperCase()} · Cash restante: ${fmt(data.cashAfter)}` })
+        const msg = side === 'buy'
+          ? `✓ Compra: ${cryptoShares.toFixed(6)} ${selected.symbol.toUpperCase()} · Cash: ${fmt(data.cashAfter)}`
+          : `✓ Venta: ${cryptoShares.toFixed(6)} ${selected.symbol.toUpperCase()} · Cash: ${fmt(data.cashAfter)}`
+        setToast({ ok: true, msg })
         window.dispatchEvent(new Event('portfolio-updated'))
-        setAmount(''); setSelected(null)
+        setAmount(''); setSelected(null); setSide('buy')
         const pr = await fetch('/api/portfolio')
         if (pr.ok) setPortfolio(await pr.json())
       } else {
@@ -340,7 +357,7 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
     } catch {
       setToast({ ok: false, msg: 'Error de red.' })
     }
-    setBuying(false)
+    setExecuting(false)
   }
 
   return (
@@ -385,9 +402,10 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Panel compra */}
+          {/* Panel compra/venta */}
           {selected && (
-            <div style={{ marginBottom: '20px', padding: '20px', borderRadius: '16px', border: '2px solid #f97316', background: '#fff8f5' }}>
+            <div style={{ marginBottom: '20px', padding: '20px', borderRadius: '16px', border: `2px solid ${side === 'buy' ? '#f97316' : '#ef4444'}`, background: side === 'buy' ? '#fff8f5' : '#fff5f5' }}>
+              {/* Info crypto seleccionada */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <img src={selected.image} alt={selected.name} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
@@ -396,23 +414,47 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                     <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>{fmt(selected.current_price)} / {selected.symbol.toUpperCase()}</p>
                   </div>
                 </div>
-                <button onClick={() => { setSelected(null); setAmount(''); setToast(null) }}
+                <button onClick={() => { setSelected(null); setAmount(''); setToast(null); setSide('buy') }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa' }}>
                   <X size={18} />
                 </button>
               </div>
 
+              {/* Toggle Buy/Sell */}
+              <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e0e0e0', marginBottom: '16px' }}>
+                <button onClick={() => { setSide('buy'); setAmount(''); setToast(null) }} style={{
+                  flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: 700,
+                  background: side === 'buy' ? '#0a0a0a' : '#fff',
+                  color: side === 'buy' ? '#fff' : '#888',
+                  transition: 'all 0.15s',
+                }}>Comprar</button>
+                <button onClick={() => { setSide('sell'); setAmount(''); setToast(null) }} style={{
+                  flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: 700,
+                  background: side === 'sell' ? '#ef4444' : '#fff',
+                  color: side === 'sell' ? '#fff' : '#888',
+                  transition: 'all 0.15s',
+                }}>Vender</button>
+              </div>
+
+              {/* Input */}
               <div style={{ marginBottom: '12px' }}>
-                <label style={{ fontSize: '12px', fontWeight: 600, color: '#555', display: 'block', marginBottom: '6px' }}>Importe en euros</label>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#555', display: 'block', marginBottom: '6px' }}>
+                  {side === 'buy' ? 'Importe en euros' : `Cantidad de ${selected.symbol.toUpperCase()} a vender`}
+                </label>
                 <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontWeight: 700 }}>€</span>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontWeight: 700, fontSize: '13px' }}>
+                    {side === 'buy' ? '€' : selected.symbol.toUpperCase().slice(0, 4)}
+                  </span>
                   <input
                     type="number" value={amount} min={0} placeholder="0.00"
                     onChange={e => { setAmount(e.target.value); setToast(null) }}
                     style={{
                       width: '100%', height: '44px', borderRadius: '12px',
                       border: '1px solid #e0e0e0', background: '#fff',
-                      paddingLeft: '28px', paddingRight: '12px',
+                      paddingLeft: side === 'buy' ? '28px' : '52px',
+                      paddingRight: '12px',
                       fontSize: '15px', fontWeight: 700, color: '#0a0a0a',
                       outline: 'none', boxSizing: 'border-box',
                     }}
@@ -420,27 +462,49 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
 
+              {/* Resumen */}
               {parseFloat(amount) > 0 && (
                 <div style={{ background: '#fff', borderRadius: '10px', padding: '12px 14px', marginBottom: '12px', border: '1px solid #f0f0f0' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '12px', color: '#888' }}>Recibirás</span>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a' }}>{shares.toFixed(6)} {selected.symbol.toUpperCase()}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '12px', color: '#888' }}>Precio unitario</span>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a' }}>{fmt(selected.current_price)}</span>
-                  </div>
+                  {side === 'buy' ? (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '12px', color: '#888' }}>Recibirás</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a' }}>{cryptoShares.toFixed(6)} {selected.symbol.toUpperCase()}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '12px', color: '#888' }}>Precio unitario</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a' }}>{fmt(selected.current_price)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '12px', color: '#888' }}>Recibirás</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#16a34a' }}>{fmt(eurValue)}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '12px', color: '#888' }}>Precio unitario</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a' }}>{fmt(selected.current_price)}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
-              <button onClick={buyCrypto} disabled={buying || !amount || parseFloat(amount) <= 0} style={{
+              <button onClick={executeCrypto} disabled={executing || !amount || parseFloat(amount) <= 0} style={{
                 width: '100%', height: '44px', borderRadius: '12px',
-                background: buying || !amount || parseFloat(amount) <= 0 ? '#e0e0e0' : '#f97316',
+                background: executing || !amount || parseFloat(amount) <= 0
+                  ? '#e0e0e0'
+                  : side === 'buy' ? '#f97316' : '#ef4444',
                 color: '#fff', border: 'none',
-                cursor: buying || !amount || parseFloat(amount) <= 0 ? 'not-allowed' : 'pointer',
+                cursor: executing || !amount || parseFloat(amount) <= 0 ? 'not-allowed' : 'pointer',
                 fontSize: '14px', fontWeight: 700, transition: 'all 0.15s',
               }}>
-                {buying ? 'Comprando...' : `Comprar ${selected.symbol.toUpperCase()}`}
+                {executing
+                  ? 'Ejecutando...'
+                  : side === 'buy'
+                    ? `Comprar ${selected.symbol.toUpperCase()}`
+                    : `Vender ${selected.symbol.toUpperCase()}`}
               </button>
             </div>
           )}
@@ -458,7 +522,7 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                 const isPos      = coin.price_change_percentage_24h >= 0
                 const isSelected = selected?.id === coin.id
                 return (
-                  <button key={coin.id} onClick={() => { setSelected(isSelected ? null : coin); setAmount(''); setToast(null) }}
+                  <button key={coin.id} onClick={() => { setSelected(isSelected ? null : coin); setAmount(''); setToast(null); setSide('buy') }}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '14px',
                       padding: '12px 16px', borderRadius: '14px',
