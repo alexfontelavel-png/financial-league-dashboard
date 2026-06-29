@@ -66,7 +66,7 @@ const TICKER_DOMAINS: Record<string, string> = {
 function PositionLogo({ ticker }: { ticker: string }) {
   const [imgError, setImgError] = useState(false)
   const domain  = TICKER_DOMAINS[ticker.toUpperCase()]
-  const logoUrl = domain ? `https://logo.clearbit.com/${domain}` : null
+  const logoUrl = domain ? `https://img.logo.dev/${domain}?token=pk_SiUlVGlKT0CPy1GCByFRSA` : null
 
   if (!imgError && logoUrl) {
     return (
