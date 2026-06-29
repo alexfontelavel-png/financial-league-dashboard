@@ -8,6 +8,53 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 })
 
+// Tickers de crypto conocidos (amplía la lista según necesites)
+const CRYPTO_TICKERS = new Set([
+  'BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'AVAX',
+  'DOT', 'MATIC', 'SHIB', 'LTC', 'UNI', 'LINK', 'ATOM', 'XLM',
+  'ALGO', 'VET', 'ICP', 'FIL', 'APT', 'ARB', 'OP', 'SUI', 'SEI',
+])
+
+// Mapeo ticker → id de CoinGecko
+const TICKER_TO_COINGECKO_ID: Record<string, string> = {
+  BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
+  XRP: 'ripple', ADA: 'cardano', DOGE: 'dogecoin', AVAX: 'avalanche-2',
+  DOT: 'polkadot', MATIC: 'matic-network', SHIB: 'shiba-inu', LTC: 'litecoin',
+  UNI: 'uniswap', LINK: 'chainlink', ATOM: 'cosmos', XLM: 'stellar',
+  ALGO: 'algorand', VET: 'vechain', ICP: 'internet-computer', FIL: 'filecoin',
+  APT: 'aptos', ARB: 'arbitrum', OP: 'optimism', SUI: 'sui', SEI: 'sei-network',
+}
+
+function isCrypto(ticker: string): boolean {
+  return CRYPTO_TICKERS.has(ticker.toUpperCase())
+}
+
+async function getCryptoPrice(ticker: string): Promise<number | null> {
+  const coinId = TICKER_TO_COINGECKO_ID[ticker.toUpperCase()]
+  if (!coinId) return null
+
+  const res = await fetch(
+    `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=eur`,
+    { next: { revalidate: 60 } }
+  )
+  if (!res.ok) return null
+
+  const data = await res.json()
+  return data[coinId]?.eur ?? null
+}
+
+async function getPositionPrice(ticker: string): Promise<number | null> {
+  if (isCrypto(ticker)) {
+    return getCryptoPrice(ticker)
+  }
+  try {
+    const quote = await getSnapshot(ticker)
+    return quote.price ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function GET(req: NextRequest) {
   const session = await auth.api.getSession({ headers: req.headers })
   if (!session?.user) {
@@ -37,21 +84,23 @@ export async function GET(req: NextRequest) {
       [portfolio.id]
     )
 
-    // Actualizar precios actuales de Polygon
+    // Actualizar precios — crypto vía CoinGecko, acciones vía Polygon
     let updatedPositions = positions
     if (positions.length > 0) {
       updatedPositions = await Promise.all(
         positions.map(async (pos) => {
-          try {
-            const quote = await getSnapshot(pos.ticker)
+          const price = await getPositionPrice(pos.ticker)
+
+          if (price !== null) {
             await client.query(
               'UPDATE positions SET current_price = $1, updated_at = NOW() WHERE id = $2',
-              [quote.price, pos.id]
+              [price, pos.id]
             )
-            return { ...pos, current_price: quote.price }
-          } catch {
-            return pos
+            return { ...pos, current_price: price }
           }
+
+          // Si falla la API, conservar el precio que hay en BD
+          return pos
         })
       )
     }
