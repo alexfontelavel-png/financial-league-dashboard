@@ -4,7 +4,7 @@ import {
   Settings, LifeBuoy, CandlestickChart, Check, X,
   TrendingDown, Send, Zap, Flame, Search, Plus, Minus,
 } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { cn } from '@/lib/utils'
 
 const nav = [
@@ -37,17 +37,26 @@ const LEAGUES = [
   },
 ]
 
+function useEscapeKey(onClose: () => void) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+}
+
 function LeaguesPanel({ onClose }: { onClose: () => void }) {
   const [joined, setJoined] = useState<number[]>([])
+  useEscapeKey(onClose)
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
+      <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4 modal-content" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-foreground">Ligas disponibles</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Únete a una liga y compite por el premio</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors"><X className="size-5" /></button>
         </div>
         <div className="flex flex-col gap-4">
           {LEAGUES.map(league => {
@@ -108,6 +117,7 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
   const [question, setQuestion] = useState('')
   const [answer, setAnswer]     = useState('')
   const [asking, setAsking]     = useState(false)
+  useEscapeKey(onClose)
 
   useEffect(() => {
     fetch('/api/movers').then(r => r.json()).then(d => { setData(d); setLoading(false) }).catch(() => setLoading(false))
@@ -131,14 +141,14 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
+      <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4 modal-content" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold text-foreground">Markets</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Mejores y peores del día · Cierre anterior</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors"><X className="size-5" /></button>
         </div>
         {loading && (
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -190,7 +200,7 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
           </div>
           {asking && <p className="text-xs text-muted-foreground mt-3 animate-pulse">Consultando con Gemini AI...</p>}
           {answer && !asking && (
-            <div className="mt-3 rounded-xl bg-muted p-3 max-h-48 overflow-y-auto">
+            <div className="mt-3 rounded-xl bg-muted p-3 max-h-48 overflow-y-auto dropdown-anim">
               <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{answer}</p>
             </div>
           )}
@@ -201,20 +211,21 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
 }
 
 function CryptoBoostPanel({ onClose }: { onClose: () => void }) {
+  useEscapeKey(onClose)
   const features = [
     'Añade las principales Criptomonedas a tu cartera',
     'Incrementa la volatilidad de tu portfolio con activos de alto riesgo',
     'Inyecta rentabilidad diferencial vs el resto de usuarios',
   ]
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
+      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4 modal-content" onClick={e => e.stopPropagation()}>
         <div className="flex items-start justify-between mb-5">
           <div className="flex items-center gap-3">
             <div className="flex size-11 items-center justify-center rounded-xl bg-orange-500"><Zap className="size-5 text-white" /></div>
             <div><h2 className="text-lg font-bold text-foreground">Crypto Boost</h2><p className="text-xs text-muted-foreground">Activos digitales de alto rendimiento</p></div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors"><X className="size-5" /></button>
         </div>
         <ul className="flex flex-col gap-3 mb-6">
           {features.map((f, i) => (
@@ -293,7 +304,7 @@ function DegenTradeOrder({ leverage, onBack, onClose }: { leverage: 2 | 3; onBac
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm">← Volver</button>
+        <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm transition-colors">← Volver</button>
         <div className="flex-1">
           <p className="text-base font-bold text-red-600">Degen Trade {leverage}x</p>
           <p className="text-xs text-muted-foreground">Coste: {leverage === 2 ? '4€' : '6,50€'} · Selecciona acción y cantidad</p>
@@ -309,8 +320,8 @@ function DegenTradeOrder({ leverage, onBack, onClose }: { leverage: 2 | 3; onBac
           {quotePrice && !quoteLoading && <span className="text-sm font-bold text-foreground shrink-0">${quotePrice.toFixed(2)}</span>}
         </div>
         {(searchResults.length > 0 || searching) && (
-          <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-border bg-card shadow-lg overflow-hidden">
-            {searching && <p className="px-4 py-3 text-xs text-muted-foreground">Buscando...</p>}
+          <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-xl border border-border bg-card shadow-lg overflow-hidden dropdown-anim">
+            {searching && <p className="px-4 py-3 text-xs text-muted-foreground animate-pulse">Buscando...</p>}
             {searchResults.slice(0, 5).map(r => (
               <button key={r.ticker} onMouseDown={() => selectTicker(r)}
                 className="flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-accent transition-colors border-b border-border last:border-0">
@@ -371,10 +382,11 @@ function DegenTradeOrder({ leverage, onBack, onClose }: { leverage: 2 | 3; onBac
 
 function DegenTradePanel({ onClose }: { onClose: () => void }) {
   const [selectedLeverage, setSelectedLeverage] = useState<2 | 3 | null>(null)
+  useEscapeKey(onClose)
   const features = ['¿Has escuchado sobre los degen trades?', 'Si tienes convicción con un movimiento, ves a por todas', 'Apalanca un trade y multiplica tus resultados']
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4 modal-content" onClick={e => e.stopPropagation()}>
         {selectedLeverage ? (
           <DegenTradeOrder leverage={selectedLeverage} onBack={() => setSelectedLeverage(null)} onClose={onClose} />
         ) : (
@@ -384,7 +396,7 @@ function DegenTradePanel({ onClose }: { onClose: () => void }) {
                 <div className="flex size-11 items-center justify-center rounded-xl bg-red-500"><Flame className="size-5 text-white" /></div>
                 <div><h2 className="text-lg font-bold text-foreground">Degen Trade</h2><p className="text-xs text-muted-foreground">Apalancamiento para traders con convicción</p></div>
               </div>
-              <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="size-5" /></button>
+              <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors"><X className="size-5" /></button>
             </div>
             <ul className="flex flex-col gap-3 mb-6">
               {features.map((f, i) => (
@@ -456,7 +468,6 @@ interface PortfolioData {
   transactions: PortfolioTransaction[]
 }
 
-// Mini sparkline SVG
 function Sparkline({ values, color }: { values: number[]; color: string }) {
   if (values.length < 2) return null
   const w = 120; const h = 40
@@ -469,18 +480,17 @@ function Sparkline({ values, color }: { values: number[]; color: string }) {
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
       <defs>
-        <linearGradient id={`sg-${color}`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`sg-${color.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.2" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={area} fill={`url(#sg-${color})`} />
+      <path d={area} fill={`url(#sg-${color.replace('#','')})`} />
       <path d={d} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
 
-// Gráfico de portfolio simulado
 function PortfolioChart({ totalValue }: { totalValue: number }) {
   const base = 10000
   const simPoints = [base, 9980, 10020, 9950, 10080, 10150, 10060, 10200, 10180, totalValue]
@@ -494,9 +504,8 @@ function PortfolioChart({ totalValue }: { totalValue: number }) {
   const area = `${d} L ${w} ${h} L 0 ${h} Z`
   const isPos = totalValue >= base
   const color = isPos ? '#16a34a' : '#ef4444'
-
   return (
-    <div style={{ position: 'relative' }}>
+    <div>
       <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ height: '80px' }}>
         <defs>
           <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
@@ -520,6 +529,7 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
   const [data, setData]       = useState<PortfolioData | null>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab]         = useState<'overview' | 'holdings' | 'history'>('overview')
+  useEscapeKey(onClose)
 
   useEffect(() => {
     fetch('/api/portfolio')
@@ -532,16 +542,16 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
   const total = data?.total_value ?? 10000
   const isPos = (data?.roi_pct ?? 0) >= 0
 
-  // Sparklines simuladas por posición
   const sparkData: Record<string, number[]> = {
     PLTR: [105, 108, 112, 109, 113, 112, 113],
     AVGO: [358, 362, 360, 365, 363, 366, 365],
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
       <div
         onClick={e => e.stopPropagation()}
+        className="modal-content"
         style={{
           width: '100%', maxWidth: '680px', maxHeight: '90vh',
           overflowY: 'auto', borderRadius: '24px',
@@ -549,7 +559,6 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
           margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
-        {/* Header */}
         <div style={{ padding: '24px 28px 0', borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div>
@@ -560,8 +569,6 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
               <X size={16} color="#666" />
             </button>
           </div>
-
-          {/* Tabs */}
           <div style={{ display: 'flex', gap: '4px' }}>
             {(['overview', 'holdings', 'history'] as const).map(t => (
               <button key={t} onClick={() => setTab(t)} style={{
@@ -580,13 +587,12 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
         <div style={{ padding: '24px 28px' }}>
           {loading && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {[1,2,3].map(i => <div key={i} style={{ height: '64px', borderRadius: '12px', background: '#f5f5f5', animation: 'pulse 1.5s infinite' }} />)}
+              {[1,2,3].map(i => <div key={i} style={{ height: '64px', borderRadius: '12px', background: '#f5f5f5' }} />)}
             </div>
           )}
 
           {!loading && data && tab === 'overview' && (
             <>
-              {/* Valor total + gráfico */}
               <div style={{ marginBottom: '20px' }}>
                 <p style={{ fontSize: '12px', fontWeight: 600, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Valor total</p>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '4px' }}>
@@ -599,7 +605,6 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
                 <PortfolioChart totalValue={total} />
               </div>
 
-              {/* KPIs */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
                 {[
                   { label: 'Invertido', value: fmt(data.invested_value), color: '#0a0a0a' },
@@ -613,7 +618,6 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
                 ))}
               </div>
 
-              {/* Asset allocation */}
               {data.positions.length > 0 && (
                 <div style={{ marginBottom: '20px' }}>
                   <p style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px' }}>Asset Allocation</p>
@@ -644,11 +648,7 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
                 </div>
               )}
 
-              {/* AI Insight */}
-              <div style={{
-                background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)',
-                borderRadius: '16px', padding: '18px 20px',
-              }}>
+              <div style={{ background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)', borderRadius: '16px', padding: '18px 20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                   <span style={{ fontSize: '16px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>AI Insight</span>
                   <span style={{ fontSize: '12px', color: '#888' }}>· powered by Gemini</span>
@@ -709,12 +709,7 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
               ) : (
                 data.transactions.slice(0, 10).map(tx => (
                   <div key={tx.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid #f0f0f0', borderRadius: '14px', padding: '14px 16px' }}>
-                    <div style={{
-                      width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
-                      background: tx.type === 'buy' ? '#0a0a0a' : '#ef4444',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '11px', fontWeight: 700, color: '#fff',
-                    }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0, background: tx.type === 'buy' ? '#0a0a0a' : '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#fff' }}>
                       {tx.type === 'buy' ? 'C' : 'V'}
                     </div>
                     <div style={{ flex: 1 }}>
@@ -816,8 +811,8 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {showLeagues   && <LeaguesPanel    onClose={() => setShowLeagues(false)} />}
-      {showMarkets   && <MarketsPanel    onClose={() => setShowMarkets(false)} />}
+      {showLeagues   && <LeaguesPanel     onClose={() => setShowLeagues(false)} />}
+      {showMarkets   && <MarketsPanel     onClose={() => setShowMarkets(false)} />}
       {showCrypto    && <CryptoBoostPanel onClose={() => setShowCrypto(false)} />}
       {showDegen     && <DegenTradePanel  onClose={() => setShowDegen(false)} />}
       {showPortfolio && <PortfolioPanel   onClose={() => setShowPortfolio(false)} />}
