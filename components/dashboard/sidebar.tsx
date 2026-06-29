@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { cn } from '@/lib/utils'
+import { CRYPTO_LOGOS } from '@/lib/crypto-logos'
 
 const nav = [
   { label: 'Dashboard', icon: LayoutGrid },
@@ -65,8 +66,10 @@ const TICKER_DOMAINS: Record<string, string> = {
 
 function PositionLogo({ ticker }: { ticker: string }) {
   const [imgError, setImgError] = useState(false)
-  const domain  = TICKER_DOMAINS[ticker.toUpperCase()]
-  const logoUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null
+  const upper      = ticker.toUpperCase()
+  const cryptoLogo = CRYPTO_LOGOS[upper]
+  const domain     = TICKER_DOMAINS[upper]
+  const logoUrl    = cryptoLogo ?? (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null)
 
   if (!imgError && logoUrl) {
     return (
@@ -312,8 +315,6 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
 
   const fmt = (n: number) => n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
 
-  // Buy: amount en EUR → shares = amount / price
-  // Sell: amount en unidades de crypto → shares = amount
   const cryptoShares = selected && parseFloat(amount) > 0
     ? side === 'buy'
       ? parseFloat(amount) / selected.current_price
@@ -368,7 +369,6 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
         background: '#ffffff', boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
         margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
       }}>
-        {/* Header */}
         <div style={{ padding: '24px 28px', borderBottom: '1px solid #f0f0f0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
@@ -390,7 +390,6 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
         </div>
 
         <div style={{ padding: '20px 28px' }}>
-          {/* Toast */}
           {toast && (
             <div style={{
               marginBottom: '16px', padding: '12px 16px', borderRadius: '12px',
@@ -402,10 +401,8 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Panel compra/venta */}
           {selected && (
             <div style={{ marginBottom: '20px', padding: '20px', borderRadius: '16px', border: `2px solid ${side === 'buy' ? '#f97316' : '#ef4444'}`, background: side === 'buy' ? '#fff8f5' : '#fff5f5' }}>
-              {/* Info crypto seleccionada */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <img src={selected.image} alt={selected.name} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
@@ -420,7 +417,6 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                 </button>
               </div>
 
-              {/* Toggle Buy/Sell */}
               <div style={{ display: 'flex', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e0e0e0', marginBottom: '16px' }}>
                 <button onClick={() => { setSide('buy'); setAmount(''); setToast(null) }} style={{
                   flex: 1, padding: '10px', border: 'none', cursor: 'pointer',
@@ -438,7 +434,6 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                 }}>Vender</button>
               </div>
 
-              {/* Input */}
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: '#555', display: 'block', marginBottom: '6px' }}>
                   {side === 'buy' ? 'Importe en euros' : `Cantidad de ${selected.symbol.toUpperCase()} a vender`}
@@ -462,7 +457,6 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
 
-              {/* Resumen */}
               {parseFloat(amount) > 0 && (
                 <div style={{ background: '#fff', borderRadius: '10px', padding: '12px 14px', marginBottom: '12px', border: '1px solid #f0f0f0' }}>
                   {side === 'buy' ? (
@@ -509,7 +503,6 @@ function CryptoPanel({ onClose }: { onClose: () => void }) {
             </div>
           )}
 
-          {/* Lista top 25 */}
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {Array.from({ length: 8 }).map((_, i) => (
@@ -982,7 +975,7 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
                             <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: '0 0 2px' }}>{pos.ticker}</p>
-                            <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{pos.shares.toFixed(2)} acc · ${pos.current_price.toFixed(2)}</p>
+                            <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{pos.shares.toFixed(4)} acc · {pos.current_price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p>
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: '0 0 2px' }}>{fmt(pos.current_value)}</p>
@@ -1022,7 +1015,7 @@ function PortfolioPanel({ onClose }: { onClose: () => void }) {
                         </p>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
-                        <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{Number(tx.shares).toFixed(4)} acc · ${Number(tx.price_per_share).toFixed(2)}/acc</p>
+                        <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{Number(tx.shares).toFixed(4)} acc · {Number(tx.price_per_share).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}/acc</p>
                         <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>
                           {new Date(tx.executed_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </p>
