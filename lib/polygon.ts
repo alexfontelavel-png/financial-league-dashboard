@@ -1,39 +1,69 @@
 const BASE = 'https://api.polygon.io'
 
 export interface TickerQuote {
-  ticker: string
-  price: number
-  open: number
-  high: number
-  low: number
-  volume: number
-  change: number
+  ticker:        string
+  price:         number
+  open:          number
+  high:          number
+  low:           number
+  volume:        number
+  change:        number
   changePercent: number
-  marketStatus: string
+  marketStatus:  string
 }
 
 async function polygonFetch<T>(path: string, params?: Record<string, string>): Promise<T> {
   const url = new URL(`${BASE}${path}`)
   url.searchParams.set('apiKey', process.env.POLYGON_API_KEY ?? '')
   if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
-  const res = await fetch(url.toString(), { next: { revalidate: 3600 } })
+
+  // Sin caché — siempre datos frescos
+  const res = await fetch(url.toString(), { cache: 'no-store' })
   if (!res.ok) throw new Error(`Polygon ${res.status}: ${await res.text()}`)
   return res.json()
 }
 
+function todayET(): string {
+  // Polygon trabaja en Eastern Time
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+}
+
+function yesterdayET(): string {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+}
+
 export async function getSnapshot(ticker: string): Promise<TickerQuote> {
-  const data = await polygonFetch<{
-    results: Array<{ o: number; h: number; l: number; c: number; v: number }>
-    ticker: string
-  }>(`/v2/aggs/ticker/${ticker.toUpperCase()}/prev`, { adjusted: 'true' })
+  const t = ticker.toUpperCase()
+
+  // Intentar primero el cierre de HOY
+  const today = todayET()
+  let data = await polygonFetch<{
+    results?: Array<{ o: number; h: number; l: number; c: number; v: number }>
+  }>(`/v2/aggs/ticker/${t}/range/1/day/${today}/${today}`, { adjusted: 'true' })
+
+  // Si hoy no tiene datos aún (mercado no cerró o fin de semana) usar ayer
+  if (!data.results?.length) {
+    const yesterday = yesterdayET()
+    data = await polygonFetch<{
+      results?: Array<{ o: number; h: number; l: number; c: number; v: number }>
+    }>(`/v2/aggs/ticker/${t}/range/1/day/${yesterday}/${yesterday}`, { adjusted: 'true' })
+  }
+
+  // Fallback a /prev si todo falla
+  if (!data.results?.length) {
+    data = await polygonFetch<{
+      results?: Array<{ o: number; h: number; l: number; c: number; v: number }>
+    }>(`/v2/aggs/ticker/${t}/prev`, { adjusted: 'true' })
+  }
 
   const r = data.results?.[0]
   if (!r) throw new Error(`No data for ${ticker}`)
 
   const change = ((r.c - r.o) / r.o) * 100
-
   return {
-    ticker:        ticker.toUpperCase(),
+    ticker:        t,
     price:         r.c,
     open:          r.o,
     high:          r.h,
@@ -45,16 +75,18 @@ export async function getSnapshot(ticker: string): Promise<TickerQuote> {
   }
 }
 
-export async function searchTickers(query: string): Promise<Array<{ ticker: string; name: string; primaryExchange: string; type: string }>> {
+export async function searchTickers(query: string): Promise<Array<{
+  ticker: string; name: string; primaryExchange: string; type: string
+}>> {
   const data = await polygonFetch<{
     results: Array<{ ticker: string; name: string; primary_exchange: string; type: string }>
   }>(`/v3/reference/tickers`, {
-    search: query, active: 'true', market: 'stocks', limit: '8'
+    search: query, active: 'true', market: 'stocks', limit: '8',
   })
   return (data.results ?? []).map(r => ({
-    ticker: r.ticker,
-    name: r.name,
+    ticker:          r.ticker,
+    name:            r.name,
     primaryExchange: r.primary_exchange,
-    type: r.type,
+    type:            r.type,
   }))
 }
