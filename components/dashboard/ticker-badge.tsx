@@ -1,6 +1,7 @@
 'use client'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
+import { CRYPTO_LOGOS } from '@/lib/crypto-logos'
 
 const TICKER_DOMAINS: Record<string, string> = {
   AAPL: 'apple.com', MSFT: 'microsoft.com', GOOGL: 'google.com',
@@ -38,8 +39,10 @@ export function TickerBadge({
   className?: string
 }) {
   const [imgError, setImgError] = useState(false)
-  const domain  = TICKER_DOMAINS[ticker.toUpperCase()]
-  const logoUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null
+  const upper      = ticker.toUpperCase()
+  const cryptoLogo = CRYPTO_LOGOS[upper]
+  const domain     = TICKER_DOMAINS[upper]
+  const logoUrl    = cryptoLogo ?? (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null)
 
   if (!imgError && logoUrl) {
     return (
