@@ -13,7 +13,7 @@ const nav = [
   { label: 'Portfolio', icon: Wallet },
   { label: 'Leagues', icon: Trophy },
   { label: 'Players', icon: Users },
-  { label: 'Crypto Boost', icon: Zap },
+  { label: 'Crypto', icon: Zap },
   { label: 'Degen Trade', icon: Flame },
 ]
 
@@ -76,11 +76,9 @@ function PositionLogo({ ticker }: { ticker: string }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, overflow: 'hidden',
       }}>
-        <img
-          src={logoUrl} alt={ticker}
+        <img src={logoUrl} alt={ticker}
           style={{ width: '28px', height: '28px', objectFit: 'contain' }}
-          onError={() => setImgError(true)}
-        />
+          onError={() => setImgError(true)} />
       </div>
     )
   }
@@ -223,16 +221,11 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
                 {data.gainers.map(m => (
                   <div key={m.ticker} className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-2.5 hover:bg-accent transition-colors">
                     <div className="flex items-center gap-2">
-  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-white border border-border">
-    <img
-      src={`https://www.google.com/s2/favicons?domain=${TICKER_DOMAINS[m.ticker] ?? 'google.com'}&sz=32`}
-      alt={m.ticker}
-      className="size-5 object-contain"
-      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-    />
-  </div>
-  <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
-</div>
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-white border border-border">
+                        <img src={`https://www.google.com/s2/favicons?domain=${TICKER_DOMAINS[m.ticker] ?? 'google.com'}&sz=32`} alt={m.ticker} className="size-5 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      </div>
+                      <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
+                    </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-green-500">+{m.change.toFixed(2)}%</span>
                       <div className="flex size-5 items-center justify-center rounded-full bg-green-500"><TrendingUp className="size-3 text-white" /></div>
@@ -247,16 +240,11 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
                 {data.losers.map(m => (
                   <div key={m.ticker} className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-2.5 hover:bg-accent transition-colors">
                     <div className="flex items-center gap-2">
-  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-white border border-border">
-    <img
-      src={`https://www.google.com/s2/favicons?domain=${TICKER_DOMAINS[m.ticker] ?? 'google.com'}&sz=32`}
-      alt={m.ticker}
-      className="size-5 object-contain"
-      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-    />
-  </div>
-  <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
-</div>
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-white border border-border">
+                        <img src={`https://www.google.com/s2/favicons?domain=${TICKER_DOMAINS[m.ticker] ?? 'google.com'}&sz=32`} alt={m.ticker} className="size-5 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      </div>
+                      <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
+                    </div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-red-500">{m.change.toFixed(2)}%</span>
                       <div className="flex size-5 items-center justify-center rounded-full bg-red-500"><TrendingDown className="size-3 text-white" /></div>
@@ -290,39 +278,215 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
-function CryptoBoostPanel({ onClose }: { onClose: () => void }) {
+interface CryptoCoin {
+  id: string
+  symbol: string
+  name: string
+  image: string
+  current_price: number
+  price_change_percentage_24h: number
+  market_cap_rank: number
+}
+
+function CryptoPanel({ onClose }: { onClose: () => void }) {
   useEscapeKey(onClose)
-  const features = [
-    'Añade las principales Criptomonedas a tu cartera',
-    'Incrementa la volatilidad de tu portfolio con activos de alto riesgo',
-    'Inyecta rentabilidad diferencial vs el resto de usuarios',
-  ]
+  const [coins, setCoins]         = useState<CryptoCoin[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [selected, setSelected]   = useState<CryptoCoin | null>(null)
+  const [amount, setAmount]       = useState('')
+  const [buying, setBuying]       = useState(false)
+  const [toast, setToast]         = useState<{ ok: boolean; msg: string } | null>(null)
+  const [portfolio, setPortfolio] = useState<{ cash_balance: number } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/crypto')
+      .then(r => r.json())
+      .then(d => { setCoins(Array.isArray(d) ? d : []); setLoading(false) })
+      .catch(() => setLoading(false))
+    fetch('/api/portfolio')
+      .then(r => r.json())
+      .then(d => setPortfolio(d))
+      .catch(() => {})
+  }, [])
+
+  const fmt    = (n: number) => n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })
+  const shares = selected && parseFloat(amount) > 0 ? parseFloat(amount) / selected.current_price : 0
+
+  async function buyCrypto() {
+    if (!selected || !amount || parseFloat(amount) <= 0) return
+    setBuying(true); setToast(null)
+    try {
+      const res = await fetch('/api/trade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticker: selected.symbol.toUpperCase(),
+          type: 'buy',
+          shares,
+          price_override: selected.current_price,
+          company_name: selected.name,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setToast({ ok: true, msg: `✓ Compra ejecutada: ${shares.toFixed(6)} ${selected.symbol.toUpperCase()} · Cash restante: ${fmt(data.cashAfter)}` })
+        window.dispatchEvent(new Event('portfolio-updated'))
+        setAmount(''); setSelected(null)
+        const pr = await fetch('/api/portfolio')
+        if (pr.ok) setPortfolio(await pr.json())
+      } else {
+        setToast({ ok: false, msg: data.error ?? 'Error desconocido' })
+      }
+    } catch {
+      setToast({ ok: false, msg: 'Error de red.' })
+    }
+    setBuying(false)
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl mx-4 modal-content" onClick={e => e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-orange-500"><Zap className="size-5 text-white" /></div>
-            <div><h2 className="text-lg font-bold text-foreground">Crypto Boost</h2><p className="text-xs text-muted-foreground">Activos digitales de alto rendimiento</p></div>
+      <div onClick={e => e.stopPropagation()} className="modal-content" style={{
+        width: '100%', maxWidth: '680px', maxHeight: '90vh',
+        overflowY: 'auto', borderRadius: '24px',
+        background: '#ffffff', boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
+        margin: '0 16px', fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}>
+        {/* Header */}
+        <div style={{ padding: '24px 28px', borderBottom: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.02em', margin: 0 }}>Crypto</h2>
+              <p style={{ fontSize: '13px', color: '#888', margin: '2px 0 0' }}>Top 25 criptomonedas · Precios en tiempo real vía CoinGecko</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {portfolio && (
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>Cash disponible</p>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: 0 }}>{fmt(portfolio.cash_balance)}</p>
+                </div>
+              )}
+              <button onClick={onClose} style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={16} color="#666" />
+              </button>
+            </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors"><X className="size-5" /></button>
         </div>
-        <ul className="flex flex-col gap-3 mb-6">
-          {features.map((f, i) => (
-            <li key={i} className="flex items-start gap-3 rounded-xl bg-background border border-border px-4 py-3">
-              <div className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-500 mt-0.5"><Zap className="size-3 text-white" /></div>
-              <p className="text-sm text-foreground">{f}</p>
-            </li>
-          ))}
-        </ul>
-        <p className="text-xs text-muted-foreground mb-4 px-1">⚠️ Los activos crypto conllevan un alto nivel de riesgo. Las posiciones pueden variar significativamente en cortos periodos de tiempo.</p>
-        <div className="flex items-center justify-between mb-4 rounded-xl bg-orange-50 border border-orange-200 px-4 py-3">
-          <div><p className="text-sm font-bold text-orange-600">Añadir exposición</p><p className="text-xs text-orange-400">Acceso completo a activos crypto</p></div>
-          <div className="text-right"><p className="text-xl font-black text-orange-600">5€</p><p className="text-xs text-orange-400">/mes</p></div>
+
+        <div style={{ padding: '20px 28px' }}>
+          {/* Toast */}
+          {toast && (
+            <div style={{
+              marginBottom: '16px', padding: '12px 16px', borderRadius: '12px',
+              background: toast.ok ? '#f0fdf4' : '#fef2f2',
+              border: `1px solid ${toast.ok ? '#bbf7d0' : '#fecaca'}`,
+              fontSize: '13px', color: toast.ok ? '#16a34a' : '#dc2626',
+            }}>
+              {toast.msg}
+            </div>
+          )}
+
+          {/* Panel compra */}
+          {selected && (
+            <div style={{ marginBottom: '20px', padding: '20px', borderRadius: '16px', border: '2px solid #f97316', background: '#fff8f5' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <img src={selected.image} alt={selected.name} style={{ width: '40px', height: '40px', borderRadius: '50%' }} />
+                  <div>
+                    <p style={{ fontSize: '16px', fontWeight: 800, color: '#0a0a0a', margin: 0 }}>{selected.name}</p>
+                    <p style={{ fontSize: '12px', color: '#888', margin: 0 }}>{fmt(selected.current_price)} / {selected.symbol.toUpperCase()}</p>
+                  </div>
+                </div>
+                <button onClick={() => { setSelected(null); setAmount(''); setToast(null) }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa' }}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: '#555', display: 'block', marginBottom: '6px' }}>Importe en euros</label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#aaa', fontWeight: 700 }}>€</span>
+                  <input
+                    type="number" value={amount} min={0} placeholder="0.00"
+                    onChange={e => { setAmount(e.target.value); setToast(null) }}
+                    style={{
+                      width: '100%', height: '44px', borderRadius: '12px',
+                      border: '1px solid #e0e0e0', background: '#fff',
+                      paddingLeft: '28px', paddingRight: '12px',
+                      fontSize: '15px', fontWeight: 700, color: '#0a0a0a',
+                      outline: 'none', boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {parseFloat(amount) > 0 && (
+                <div style={{ background: '#fff', borderRadius: '10px', padding: '12px 14px', marginBottom: '12px', border: '1px solid #f0f0f0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '12px', color: '#888' }}>Recibirás</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a' }}>{shares.toFixed(6)} {selected.symbol.toUpperCase()}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '12px', color: '#888' }}>Precio unitario</span>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a' }}>{fmt(selected.current_price)}</span>
+                  </div>
+                </div>
+              )}
+
+              <button onClick={buyCrypto} disabled={buying || !amount || parseFloat(amount) <= 0} style={{
+                width: '100%', height: '44px', borderRadius: '12px',
+                background: buying || !amount || parseFloat(amount) <= 0 ? '#e0e0e0' : '#f97316',
+                color: '#fff', border: 'none',
+                cursor: buying || !amount || parseFloat(amount) <= 0 ? 'not-allowed' : 'pointer',
+                fontSize: '14px', fontWeight: 700, transition: 'all 0.15s',
+              }}>
+                {buying ? 'Comprando...' : `Comprar ${selected.symbol.toUpperCase()}`}
+              </button>
+            </div>
+          )}
+
+          {/* Lista top 25 */}
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} style={{ height: '64px', borderRadius: '12px', background: '#f5f5f5' }} />
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {coins.map(coin => {
+                const isPos      = coin.price_change_percentage_24h >= 0
+                const isSelected = selected?.id === coin.id
+                return (
+                  <button key={coin.id} onClick={() => { setSelected(isSelected ? null : coin); setAmount(''); setToast(null) }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '14px',
+                      padding: '12px 16px', borderRadius: '14px',
+                      border: isSelected ? '2px solid #f97316' : '1px solid #f0f0f0',
+                      background: isSelected ? '#fff8f5' : '#fff',
+                      cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                      width: '100%',
+                    }}>
+                    <span style={{ fontSize: '11px', color: '#ccc', fontWeight: 700, width: '20px', flexShrink: 0 }}>
+                      #{coin.market_cap_rank}
+                    </span>
+                    <img src={coin.image} alt={coin.name} style={{ width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: 0, lineHeight: 1.2 }}>{coin.name}</p>
+                      <p style={{ fontSize: '11px', color: '#aaa', margin: 0 }}>{coin.symbol.toUpperCase()}</p>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 700, color: '#0a0a0a', margin: 0 }}>{fmt(coin.current_price)}</p>
+                      <p style={{ fontSize: '11px', fontWeight: 600, color: isPos ? '#16a34a' : '#ef4444', margin: 0 }}>
+                        {isPos ? '+' : ''}{coin.price_change_percentage_24h?.toFixed(2)}%
+                      </p>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
-        <button onClick={onClose} className="w-full rounded-xl bg-orange-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
-          Añadir exposición · 5€/mes
-        </button>
       </div>
     </div>
   )
@@ -821,11 +985,11 @@ export function Sidebar() {
 
   function handleNav(label: string) {
     setActive(label)
-    if (label === 'Leagues')      setShowLeagues(true)
-    if (label === 'Markets')      setShowMarkets(true)
-    if (label === 'Crypto Boost') setShowCrypto(true)
-    if (label === 'Degen Trade')  setShowDegen(true)
-    if (label === 'Portfolio')    setShowPortfolio(true)
+    if (label === 'Leagues')     setShowLeagues(true)
+    if (label === 'Markets')     setShowMarkets(true)
+    if (label === 'Crypto')      setShowCrypto(true)
+    if (label === 'Degen Trade') setShowDegen(true)
+    if (label === 'Portfolio')   setShowPortfolio(true)
   }
 
   return (
@@ -846,7 +1010,7 @@ export function Sidebar() {
           {nav.map((item) => {
             const Icon     = item.icon
             const isActive = active === item.label
-            const isCrypto = item.label === 'Crypto Boost'
+            const isCrypto = item.label === 'Crypto'
             const isDegen  = item.label === 'Degen Trade'
             return (
               <button key={item.label} onClick={() => handleNav(item.label)}
@@ -885,11 +1049,11 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {showLeagues   && <LeaguesPanel     onClose={() => setShowLeagues(false)} />}
-      {showMarkets   && <MarketsPanel     onClose={() => setShowMarkets(false)} />}
-      {showCrypto    && <CryptoBoostPanel onClose={() => setShowCrypto(false)} />}
-      {showDegen     && <DegenTradePanel  onClose={() => setShowDegen(false)} />}
-      {showPortfolio && <PortfolioPanel   onClose={() => setShowPortfolio(false)} />}
+      {showLeagues   && <LeaguesPanel    onClose={() => setShowLeagues(false)} />}
+      {showMarkets   && <MarketsPanel    onClose={() => setShowMarkets(false)} />}
+      {showCrypto    && <CryptoPanel     onClose={() => setShowCrypto(false)} />}
+      {showDegen     && <DegenTradePanel onClose={() => setShowDegen(false)} />}
+      {showPortfolio && <PortfolioPanel  onClose={() => setShowPortfolio(false)} />}
     </>
   )
 }
