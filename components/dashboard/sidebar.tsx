@@ -110,17 +110,15 @@ function LeaguesPanel({ onClose }: { onClose: () => void }) {
   useEscapeKey(onClose)
   const [view, setView] = useState<'menu' | 'create' | 'search'>('menu')
 
-  // --- Create state ---
   const [form, setForm] = useState({ name: '', max_participants: '', entry_fee: '', duration_days: '' })
   const [creating, setCreating] = useState(false)
   const [createResult, setCreateResult] = useState<{ ok: boolean; msg: string } | null>(null)
 
-  // --- Search state ---
   const [searchName, setSearchName] = useState('')
   const [searching, setSearching]   = useState(false)
   const [leagueData, setLeagueData] = useState<{
-    league: { id: string; name: string; max_participants: number; entry_fee: number; duration_days: number; end_date: string; created_by: string }
-    members: { user_id: string; username: string; roi_pct: number; total_value: number; joined_at: string }[]
+    league: { id: string; name: string; max_participants: number; entry_fee: number; duration_days: number; end_date: string }
+    members: { user_id: string; username: string; roi_pct: number; total_value: number }[]
   } | null>(null)
   const [searchError, setSearchError] = useState('')
   const [joining, setJoining]         = useState(false)
@@ -151,6 +149,292 @@ function LeaguesPanel({ onClose }: { onClose: () => void }) {
     }
     setCreating(false)
   }
+
+  async function handleSearch() {
+    if (!searchName.trim()) return
+    setSearching(true); setLeagueData(null); setSearchError(''); setJoinMsg('')
+    try {
+      const res = await fetch(`/api/leagues?name=${encodeURIComponent(searchName.trim())}`)
+      const data = await res.json()
+      if (res.ok) setLeagueData(data)
+      else setSearchError(data.error ?? 'Liga no encontrada')
+    } catch {
+      setSearchError('Error de red.')
+    }
+    setSearching(false)
+  }
+
+  async function handleJoin(league_id: string) {
+    setJoining(true); setJoinMsg('')
+    try {
+      const res = await fetch('/api/leagues/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ league_id }),
+      })
+      const data = await res.json()
+      if (data.success) { setJoinMsg('✓ Te has unido a la liga'); handleSearch() }
+      else setJoinMsg(data.error ?? 'Error al unirse')
+    } catch {
+      setJoinMsg('Error de red.')
+    }
+    setJoining(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm modal-backdrop" onClick={onClose}>
+      <div className="modal-content w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl" onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+          <div className="flex items-center gap-2.5">
+            {view !== 'menu' && (
+              <button
+                onClick={() => { setView('menu'); setCreateResult(null); setLeagueData(null); setSearchError(''); setJoinMsg('') }}
+                className="text-muted-foreground hover:text-foreground transition-colors text-lg leading-none mr-1"
+              >←</button>
+            )}
+            <div>
+              <h2 className="text-lg font-bold text-foreground">
+                {view === 'menu' ? 'Ligas' : view === 'create' ? 'Crear liga' : 'Buscar liga'}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {view === 'menu' ? 'Crea o únete a una liga' : view === 'create' ? 'Configura tu competición' : 'Encuentra una liga por nombre'}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+            <X className="size-5" />
+          </button>
+        </div>
+
+        <div className="p-6">
+
+          {/* MENU */}
+          {view === 'menu' && (
+            <div className="flex flex-col gap-3">
+              <button onClick={() => setView('create')}
+                className="flex items-center gap-4 p-5 rounded-2xl bg-primary text-primary-foreground hover:opacity-90 transition-opacity text-left w-full">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                  <Trophy className="size-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold">Crear liga</p>
+                  <p className="text-xs text-primary-foreground/60 mt-0.5">Configura las reglas y comparte con tus amigos</p>
+                </div>
+              </button>
+
+              <button onClick={() => setView('search')}
+                className="flex items-center gap-4 p-5 rounded-2xl border border-border bg-background hover:bg-accent transition-colors text-left w-full">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted">
+                  <Search className="size-5 text-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground">Buscar liga</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Encuentra una liga por nombre y únete</p>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* CREATE */}
+          {view === 'create' && (
+            <div className="flex flex-col gap-4">
+              {createResult && (
+                <div className={`rounded-xl px-4 py-3 text-sm font-medium ${createResult.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+                  {createResult.msg}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nombre de la liga</label>
+                <input
+                  className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/40"
+                  placeholder="ej. Los Cracks 2026"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Participantes máx.</label>
+                  <input
+                    className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/40"
+                    type="number" min={2} placeholder="ej. 10"
+                    value={form.max_participants}
+                    onChange={e => setForm(f => ({ ...f, max_participants: e.target.value }))}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cuota de entrada (€)</label>
+                  <input
+                    className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/40"
+                    type="number" min={0} placeholder="ej. 50"
+                    value={form.entry_fee}
+                    onChange={e => setForm(f => ({ ...f, entry_fee: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Duración (días)</label>
+                <input
+                  className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/40"
+                  type="number" min={1} placeholder="ej. 60"
+                  value={form.duration_days}
+                  onChange={e => setForm(f => ({ ...f, duration_days: e.target.value }))}
+                />
+                {endDatePreview && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    📅 Fecha de fin: <span className="font-semibold text-foreground">{endDatePreview}</span>
+                  </p>
+                )}
+              </div>
+
+              {form.name && form.max_participants && form.entry_fee && form.duration_days && (
+                <div className="rounded-xl bg-muted border border-border p-4 flex flex-col gap-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Vista previa</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Premio estimado</span>
+                    <span className="font-bold text-foreground">€{(parseFloat(form.entry_fee || '0') * parseInt(form.max_participants || '0')).toLocaleString('es-ES')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Plazas</span>
+                    <span className="font-semibold text-foreground">{form.max_participants} jugadores</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Fin de liga</span>
+                    <span className="font-semibold text-foreground">{endDatePreview}</span>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={handleCreate}
+                disabled={creating || !form.name || !form.max_participants || !form.entry_fee || !form.duration_days}
+                className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {creating ? 'Creando...' : 'Crear liga'}
+              </button>
+            </div>
+          )}
+
+          {/* SEARCH */}
+          {view === 'search' && (
+            <div className="flex flex-col gap-4">
+              <div className="flex gap-2">
+                <input
+                  className="flex-1 h-11 rounded-xl border border-border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-ring/40"
+                  placeholder="Nombre exacto de la liga..."
+                  value={searchName}
+                  onChange={e => setSearchName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                />
+                <button
+                  onClick={handleSearch}
+                  disabled={searching || !searchName.trim()}
+                  className="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                >
+                  {searching ? '...' : 'Buscar'}
+                </button>
+              </div>
+
+              {searchError && (
+                <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                  {searchError}
+                </div>
+              )}
+
+              {joinMsg && (
+                <div className={`rounded-xl px-4 py-3 text-sm font-medium ${joinMsg.startsWith('✓') ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+                  {joinMsg}
+                </div>
+              )}
+
+              {leagueData && (
+                <div className="flex flex-col gap-3">
+                  {/* Info card */}
+                  <div className="rounded-2xl bg-primary p-5">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <p className="text-lg font-black text-primary-foreground tracking-tight">{leagueData.league.name}</p>
+                        <p className="text-xs text-primary-foreground/50 mt-0.5">
+                          {leagueData.members.length}/{leagueData.league.max_participants} jugadores · {leagueData.league.duration_days} días
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-primary-foreground/50 mb-0.5">Premio</p>
+                        <p className="text-xl font-black" style={{ color: '#ff6b35' }}>
+                          €{(leagueData.league.entry_fee * leagueData.league.max_participants).toLocaleString('es-ES')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      {[
+                        { label: 'Cuota', value: `€${leagueData.league.entry_fee}` },
+                        { label: 'Fecha fin', value: new Date(leagueData.league.end_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) },
+                        { label: 'Días restantes', value: `${Math.max(0, Math.ceil((new Date(leagueData.league.end_date).getTime() - Date.now()) / 86400000))}d` },
+                      ].map(k => (
+                        <div key={k.label} className="rounded-xl bg-white/5 px-3 py-2.5">
+                          <p className="text-xs text-primary-foreground/40 mb-0.5">{k.label}</p>
+                          <p className="text-sm font-bold text-primary-foreground">{k.value}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={() => handleJoin(leagueData.league.id)}
+                      disabled={joining}
+                      className="w-full h-10 rounded-xl text-sm font-bold transition-opacity disabled:opacity-60"
+                      style={{ background: '#ff6b35', color: '#fff' }}
+                    >
+                      {joining ? 'Uniéndose...' : `Unirse · €${leagueData.league.entry_fee}`}
+                    </button>
+                  </div>
+
+                  {/* Ranking */}
+                  {leagueData.members.length > 0 ? (
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                        Ranking · {leagueData.members.length} jugadores
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {leagueData.members.map((m, i) => {
+                          const isPos = (m.roi_pct ?? 0) >= 0
+                          const medals = ['🥇', '🥈', '🥉']
+                          return (
+                            <div key={m.user_id}
+                              className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${i === 0 ? 'bg-amber-50 border-amber-200' : 'bg-background border-border'}`}>
+                              <span className="text-base w-6 text-center shrink-0">{medals[i] ?? `${i + 1}`}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-foreground">{m.username}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {(m.total_value ?? 10000).toLocaleString('es-ES', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 })}
+                                </p>
+                              </div>
+                              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${isPos ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                                {isPos ? '+' : ''}{(m.roi_pct ?? 0).toFixed(2)}%
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-6">Aún no hay jugadores. ¡Sé el primero!</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  )
+}
 
   async function handleSearch() {
     if (!searchName.trim()) return
