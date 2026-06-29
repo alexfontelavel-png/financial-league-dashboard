@@ -222,7 +222,17 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
               <div className="flex flex-col gap-2">
                 {data.gainers.map(m => (
                   <div key={m.ticker} className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-2.5 hover:bg-accent transition-colors">
-                    <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
+                    <div className="flex items-center gap-2">
+  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-white border border-border">
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${TICKER_DOMAINS[m.ticker] ?? 'google.com'}&sz=32`}
+      alt={m.ticker}
+      className="size-5 object-contain"
+      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+    />
+  </div>
+  <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
+</div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-green-500">+{m.change.toFixed(2)}%</span>
                       <div className="flex size-5 items-center justify-center rounded-full bg-green-500"><TrendingUp className="size-3 text-white" /></div>
@@ -236,7 +246,17 @@ function MarketsPanel({ onClose }: { onClose: () => void }) {
               <div className="flex flex-col gap-2">
                 {data.losers.map(m => (
                   <div key={m.ticker} className="flex items-center justify-between rounded-xl border border-border bg-background px-4 py-2.5 hover:bg-accent transition-colors">
-                    <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
+                    <div className="flex items-center gap-2">
+  <div className="flex size-7 shrink-0 items-center justify-center rounded-lg overflow-hidden bg-white border border-border">
+    <img
+      src={`https://www.google.com/s2/favicons?domain=${TICKER_DOMAINS[m.ticker] ?? 'google.com'}&sz=32`}
+      alt={m.ticker}
+      className="size-5 object-contain"
+      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+    />
+  </div>
+  <div><p className="text-sm font-bold text-foreground">{m.ticker}</p><p className="text-xs text-muted-foreground">${m.price.toFixed(2)}</p></div>
+</div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-red-500">{m.change.toFixed(2)}%</span>
                       <div className="flex size-5 items-center justify-center rounded-full bg-red-500"><TrendingDown className="size-3 text-white" /></div>
