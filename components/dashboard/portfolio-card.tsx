@@ -57,13 +57,13 @@ function PositionLogo({ ticker }: { ticker: string }) {
   if (!imgError && logoUrl) {
     return (
       <div style={{
-        width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+        width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
         background: '#fff', border: '1px solid #f0f0f0',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
       }}>
         <img src={logoUrl} alt={ticker}
-          style={{ width: '22px', height: '22px', objectFit: 'contain' }}
+          style={{ width: '24px', height: '24px', objectFit: 'contain' }}
           onError={() => setImgError(true)} />
       </div>
     )
@@ -71,9 +71,9 @@ function PositionLogo({ ticker }: { ticker: string }) {
 
   return (
     <div style={{
-      width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
+      width: '36px', height: '36px', borderRadius: '10px', flexShrink: 0,
       background: '#f0f0f0', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#0a0a0a',
+      justifyContent: 'center', fontSize: '11px', fontWeight: 700, color: '#0a0a0a',
     }}>
       {ticker.slice(0, 2)}
     </div>
@@ -107,10 +107,7 @@ function AreaSparkline({ data, positive, filter }: {
         d.setDate(d.getDate() - (data.length - 1 - i))
         return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
       })
-    : Array.from({ length: data.length }, (_, i) => {
-        const weekNum = data.length - i
-        return `S-${weekNum}`
-      })
+    : Array.from({ length: data.length }, (_, i) => `S-${data.length - i}`)
 
   const labelIndices = [0, Math.floor((data.length - 1) / 2), data.length - 1]
 
@@ -255,33 +252,35 @@ export function PortfolioCard() {
         </div>
       </div>
 
-      {/* Top 6 posiciones */}
+      {/* Top 6 posiciones — 3 columnas, layout vertical por card */}
       {!loading && top6.length > 0 && (
         <div>
           <div style={{ height: '1px', background: '#f5f5f5', marginBottom: '16px' }} />
           <p style={{ fontSize: '11px', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>
             Top 6 posiciones activas
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
             {top6.map(pos => (
               <div key={pos.ticker} style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: '#fafafa', borderRadius: '12px',
-                padding: '10px', border: '1px solid #f0f0f0',
-                overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: '6px', background: '#fafafa', borderRadius: '12px',
+                padding: '12px 8px', border: '1px solid #f0f0f0', textAlign: 'center',
               }}>
                 <PositionLogo ticker={pos.ticker} />
-                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                  <p style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a', margin: 0, lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {pos.ticker}
-                  </p>
-                  <p style={{ fontSize: '11px', fontWeight: 600, color: pos.pnl_pct >= 0 ? '#16a34a' : '#ef4444', margin: 0, lineHeight: 1.3 }}>
-                    {pos.pnl_pct >= 0 ? '+' : ''}{pos.pnl_pct.toFixed(2)}%
-                  </p>
-                </div>
-                <p style={{ fontSize: '11px', fontWeight: 700, color: '#0a0a0a', margin: 0, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                <p style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a', margin: 0, lineHeight: 1 }}>
+                  {pos.ticker}
+                </p>
+                <p style={{ fontSize: '12px', fontWeight: 700, color: '#0a0a0a', margin: 0 }}>
                   {formatEuro(pos.current_value)}
                 </p>
+                <span style={{
+                  fontSize: '10px', fontWeight: 700,
+                  color: pos.pnl_pct >= 0 ? '#16a34a' : '#ef4444',
+                  background: pos.pnl_pct >= 0 ? '#f0fdf4' : '#fef2f2',
+                  padding: '2px 7px', borderRadius: '100px',
+                }}>
+                  {pos.pnl_pct >= 0 ? '+' : ''}{pos.pnl_pct.toFixed(2)}%
+                </span>
               </div>
             ))}
           </div>
