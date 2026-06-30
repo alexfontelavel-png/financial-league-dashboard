@@ -16,7 +16,6 @@ export async function GET() {
 
   const results: ({ ticker: string; price: number; change: number } | null)[] = []
 
-  // Procesar en lotes de 5 con pausa entre lotes (límite gratuito: 5 req/min)
   const batchSize = 5
   for (let i = 0; i < TICKERS.length; i += batchSize) {
     const batch = TICKERS.slice(i, i + batchSize)
@@ -25,7 +24,7 @@ export async function GET() {
         try {
           const res = await fetch(
             `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apiKey=${apiKey}`,
-            { next: { revalidate: 3600 } }
+            { cache: 'no-store' }
           )
           const data = await res.json()
           const r = data.results?.[0]
@@ -39,7 +38,6 @@ export async function GET() {
     )
     results.push(...batchResults)
 
-    // Esperar 12s entre lotes para no superar 5 req/min (excepto en el último lote)
     if (i + batchSize < TICKERS.length) {
       await sleep(12000)
     }
