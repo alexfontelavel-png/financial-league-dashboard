@@ -1,62 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Pool } from 'pg'
 import { auth } from '@/lib/auth'
-import { getSnapshot } from '@/lib/polygon'
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 })
-
-const CRYPTO_TICKERS = new Set([
-  'BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'AVAX',
-  'DOT', 'MATIC', 'SHIB', 'LTC', 'UNI', 'LINK', 'ATOM', 'XLM',
-  'ALGO', 'VET', 'ICP', 'FIL', 'APT', 'ARB', 'OP', 'SUI', 'SEI',
-])
-
-const TICKER_TO_COINGECKO_ID: Record<string, string> = {
-  BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
-  XRP: 'ripple', ADA: 'cardano', DOGE: 'dogecoin', AVAX: 'avalanche-2',
-  DOT: 'polkadot', MATIC: 'matic-network', SHIB: 'shiba-inu', LTC: 'litecoin',
-  UNI: 'uniswap', LINK: 'chainlink', ATOM: 'cosmos', XLM: 'stellar',
-  ALGO: 'algorand', VET: 'vechain', ICP: 'internet-computer', FIL: 'filecoin',
-  APT: 'aptos', ARB: 'arbitrum', OP: 'optimism', SUI: 'sui', SEI: 'sei-network',
-}
-
-function isCrypto(ticker: string): boolean {
-  return CRYPTO_TICKERS.has(ticker.toUpperCase())
-}
-
-async function getCryptoPrice(ticker: string): Promise<number | null> {
-  const coinId = TICKER_TO_COINGECKO_ID[ticker.toUpperCase()]
-  if (!coinId) return null
-  try {
-    const res = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=eur`,
-      { cache: 'no-store' }
-    )
-    if (!res.ok) return null
-    const data = await res.json()
-    return data[coinId]?.eur ?? null
-  } catch {
-    return null
-  }
-}
-
-async function getPositionPrice(ticker: string): Promise<number | null> {
-  if (isCrypto(ticker)) {
-    return getCryptoPrice(ticker)
-  }
-  try {
-    const quote = await getSnapshot(ticker)
-    return quote.price ?? null
-  } catch (err) {
-    console.error(`Polygon error for ${ticker}:`, err)
-    return null
-  }
-}
-
-const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 export async function GET(req: NextRequest) {
   const session = await auth.api.getSession({ headers: req.headers })
@@ -84,34 +33,30 @@ export async function GET(req: NextRequest) {
       [portfolio.id]
     )
 
-    const updatedPositions = []
-    let stockCallCount = 0
+    // Leer precios actuales desde la caché compartida
+    const tickers = positions.map(p => p.ticker)
+    const priceMap = new Map<string, number>()
 
-    for (const pos of positions) {
-      const price = await getPositionPrice(pos.ticker)
-
-      if (price !== null) {
-        await client.query(
-          'UPDATE positions SET current_price = $1, updated_at = NOW() WHERE id = $2',
-          [price, pos.id]
-        )
-        updatedPositions.push({ ...pos, current_price: price })
-      } else {
-        // Mantener el precio anterior si falla la API
-        updatedPositions.push(pos)
-      }
-
-      // Espaciar llamadas a Polygon: máx 5/min con margen de seguridad → 13s entre llamadas
-      if (!isCrypto(pos.ticker)) {
-        stockCallCount++
-        if (stockCallCount < positions.filter(p => !isCrypto(p.ticker)).length) {
-          await delay(13000)
-        }
+    if (tickers.length > 0) {
+      const { rows: cachedPrices } = await client.query(
+        'SELECT ticker, price FROM ticker_prices WHERE ticker = ANY($1)',
+        [tickers]
+      )
+      for (const row of cachedPrices) {
+        priceMap.set(row.ticker, parseFloat(row.price))
       }
     }
 
+    const updatedPositions = positions.map(pos => {
+      const cachedPrice = priceMap.get(pos.ticker)
+      return {
+        ...pos,
+        current_price: cachedPrice ?? parseFloat(pos.current_price),
+      }
+    })
+
     const investedValue = updatedPositions.reduce(
-      (acc, pos) => acc + parseFloat(pos.shares) * parseFloat(pos.current_price), 0
+      (acc, pos) => acc + parseFloat(pos.shares) * parseFloat(pos.current_price as any), 0
     )
     const totalValue = parseFloat(portfolio.cash_balance) + investedValue
 
@@ -135,10 +80,10 @@ export async function GET(req: NextRequest) {
         company_name:  pos.company_name,
         shares:        parseFloat(pos.shares),
         avg_buy_price: parseFloat(pos.avg_buy_price),
-        current_price: parseFloat(pos.current_price),
-        current_value: parseFloat(pos.shares) * parseFloat(pos.current_price),
-        pnl:           (parseFloat(pos.current_price) - parseFloat(pos.avg_buy_price)) * parseFloat(pos.shares),
-        pnl_pct:       ((parseFloat(pos.current_price) - parseFloat(pos.avg_buy_price)) / parseFloat(pos.avg_buy_price)) * 100,
+        current_price: parseFloat(pos.current_price as any),
+        current_value: parseFloat(pos.shares) * parseFloat(pos.current_price as any),
+        pnl:           (parseFloat(pos.current_price as any) - parseFloat(pos.avg_buy_price)) * parseFloat(pos.shares),
+        pnl_pct:       ((parseFloat(pos.current_price as any) - parseFloat(pos.avg_buy_price)) / parseFloat(pos.avg_buy_price)) * 100,
       })),
       transactions,
     })
