@@ -50,7 +50,8 @@ async function getPositionPrice(ticker: string): Promise<number | null> {
   try {
     const quote = await getSnapshot(ticker)
     return quote.price ?? null
-  } catch {
+  } catch (err) {
+    console.error(`Polygon error for ${ticker}:`, err)
     return null
   }
 }
@@ -65,13 +66,11 @@ export async function GET(req: NextRequest) {
 
   const client = await pool.connect()
   try {
-    // Obtener portfolio
     let { rows: [portfolio] } = await client.query(
       'SELECT * FROM portfolios WHERE user_id = $1',
       [session.user.id]
     )
 
-    // Crear si no existe
     if (!portfolio) {
       const { rows: [newPortfolio] } = await client.query(
         'INSERT INTO portfolios (user_id, cash_balance, total_value) VALUES ($1, 10000, 10000) RETURNING *',
@@ -80,14 +79,14 @@ export async function GET(req: NextRequest) {
       portfolio = newPortfolio
     }
 
-    // Obtener posiciones
     const { rows: positions } = await client.query(
       'SELECT * FROM positions WHERE portfolio_id = $1 ORDER BY created_at DESC',
       [portfolio.id]
     )
 
-    // Actualizar precios secuencialmente para respetar límite de Polygon (5 req/min)
     const updatedPositions = []
+    let stockCallCount = 0
+
     for (const pos of positions) {
       const price = await getPositionPrice(pos.ticker)
 
@@ -98,29 +97,29 @@ export async function GET(req: NextRequest) {
         )
         updatedPositions.push({ ...pos, current_price: price })
       } else {
+        // Mantener el precio anterior si falla la API
         updatedPositions.push(pos)
       }
 
-      // 250ms entre peticiones — crypto va a CoinGecko así que no cuenta
-      // pero lo aplicamos a todo para no saturar ninguna API
+      // Espaciar llamadas a Polygon: máx 5/min con margen de seguridad → 13s entre llamadas
       if (!isCrypto(pos.ticker)) {
-        await delay(250)
+        stockCallCount++
+        if (stockCallCount < positions.filter(p => !isCrypto(p.ticker)).length) {
+          await delay(13000)
+        }
       }
     }
 
-    // Calcular valor total
     const investedValue = updatedPositions.reduce(
       (acc, pos) => acc + parseFloat(pos.shares) * parseFloat(pos.current_price), 0
     )
     const totalValue = parseFloat(portfolio.cash_balance) + investedValue
 
-    // Actualizar total_value en BD
     await client.query(
       'UPDATE portfolios SET total_value = $1, updated_at = NOW() WHERE id = $2',
       [totalValue, portfolio.id]
     )
 
-    // Historial de transacciones
     const { rows: transactions } = await client.query(
       'SELECT * FROM transactions WHERE portfolio_id = $1 ORDER BY executed_at DESC LIMIT 20',
       [portfolio.id]
